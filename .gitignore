@@ -37,3 +37,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+/lib/firebase.js
+/lig/superbase.js
+/.env
