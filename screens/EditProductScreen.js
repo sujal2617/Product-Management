@@ -90,8 +90,16 @@ export default function EditProductScreen({
         <TextInput
           style={styles.input}
           placeholder="Product Name"
+          placeholderTextColor={
+            COLORS.subText
+          }
           value={name}
           onChangeText={setName}
+          autoCapitalize="words"
+          autoCorrect={false}
+          selectionColor={
+            COLORS.primary
+          }
         />
 
         <TouchableOpacity
@@ -115,6 +123,7 @@ const styles =
   StyleSheet.create({
     safe: {
       flex: 1,
+
       backgroundColor:
         COLORS.background,
 
@@ -135,8 +144,11 @@ const styles =
 
     heading: {
       fontSize: 30,
+
       fontWeight: '800',
+
       marginBottom: 24,
+
       color: COLORS.text,
     },
 
@@ -150,6 +162,12 @@ const styles =
       padding: 16,
 
       marginBottom: 20,
+
+      fontSize: 18,
+
+      fontWeight: '600',
+
+      color: COLORS.text,
     },
 
     button: {
@@ -165,8 +183,10 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: '#eef7ff',
+
       fontWeight: '700',
+
       fontSize: 16,
     },
   });

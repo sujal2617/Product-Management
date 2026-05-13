@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, {
+  useState,
+} from 'react';
 
 import {
   View,
@@ -29,18 +31,20 @@ export default function AddProductScreen({
   const [name, setName] =
     useState('');
 
-  const handleSave = async () => {
-    if (!name) {
-      Alert.alert(
-        'Missing Fields',
-        'Please enter product name'
-      );
+  const handleSave =
+    async () => {
+      if (!name) {
+        Alert.alert(
+          'Missing Fields',
+          'Please enter product name'
+        );
 
-      return;
-    }
+        return;
+      }
 
-    const { data: existing } =
-      await supabase
+      const {
+        data: existing,
+      } = await supabase
         .from('products')
         .select('*')
         .ilike(
@@ -49,39 +53,39 @@ export default function AddProductScreen({
         )
         .maybeSingle();
 
-    if (existing) {
+      if (existing) {
+        Alert.alert(
+          'Duplicate Product',
+          'Product already exists'
+        );
+
+        return;
+      }
+
+      const { error } =
+        await supabase
+          .from('products')
+          .insert({
+            name:
+              name.trim(),
+          });
+
+      if (error) {
+        Alert.alert(
+          'Error',
+          'Failed to add product'
+        );
+
+        return;
+      }
+
       Alert.alert(
-        'Duplicate Product',
-        'Product already exists'
+        'Success',
+        'Product Added'
       );
 
-      return;
-    }
-
-    const { error } =
-      await supabase
-        .from('products')
-        .insert({
-          name:
-            name.trim(),
-        });
-
-    if (error) {
-      Alert.alert(
-        'Error',
-        'Failed to add product'
-      );
-
-      return;
-    }
-
-    Alert.alert(
-      'Success',
-      'Product Added'
-    );
-
-    navigation.goBack();
-  };
+      navigation.goBack();
+    };
 
   return (
     <SafeAreaView
@@ -90,6 +94,9 @@ export default function AddProductScreen({
       <ScrollView
         contentContainerStyle={
           styles.scroll
+        }
+        showsVerticalScrollIndicator={
+          false
         }
       >
         <Text
@@ -102,8 +109,16 @@ export default function AddProductScreen({
           <TextInput
             style={styles.input}
             placeholder="Product Name"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={name}
             onChangeText={setName}
+            autoCapitalize="words"
+            autoCorrect={false}
+            selectionColor={
+              COLORS.primary
+            }
           />
 
           <TouchableOpacity
@@ -128,6 +143,7 @@ const styles =
   StyleSheet.create({
     safe: {
       flex: 1,
+
       backgroundColor:
         COLORS.background,
     },
@@ -138,8 +154,11 @@ const styles =
 
     heading: {
       fontSize: 32,
+
       fontWeight: '800',
+
       color: COLORS.text,
+
       marginBottom: 24,
     },
 
@@ -186,8 +205,10 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: '#eef7ff',
+
       fontWeight: '700',
+
       fontSize: 16,
     },
   });

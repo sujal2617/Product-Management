@@ -1,25 +1,34 @@
 export const COLORS = {
-  background: '#F4F7FC',
+  // MAIN BACKGROUNDS
+  background: '#05080a',
 
-  white: '#FFFFFF',
+  white: '#1b2229',
 
-  primary: '#5B8DEF',
+  inputBg: '#252d35',
 
-  primaryDark: '#3E6FD8',
+  border: '#313b45',
 
-  primaryLight: '#EAF1FF',
+  // PRIMARY BLUE
+  primary: '#6ea8ff',
 
-  text: '#1E293B',
+  primaryDark: '#5a95ee',
 
-  subText: '#64748B',
+  primaryLight: '#2d4361',
 
-  border: '#E2E8F0',
+  // TEXT
+  text: '#f1f5f9',
 
+  subText: '#94a3b8',
+
+  // STATUS
   success: '#22C55E',
 
-  danger: '#EF4444',
+  danger: '#EE4B2B',
 
-  inputBg: '#F8FAFC',
+  // EXTRA
+  cardDark: '#111417',
+
+  icon: '#cbd5e1',
 };
 
 export const SPACING = {
@@ -41,12 +50,12 @@ export const SHADOW = {
 
   shadowOffset: {
     width: 0,
-    height: 4,
+    height: 5,
   },
 
-  shadowOpacity: 0.08,
+  shadowOpacity: 0.35,
 
-  shadowRadius: 12,
+  shadowRadius: 10,
 
-  elevation: 5,
+  elevation: 8,
 };

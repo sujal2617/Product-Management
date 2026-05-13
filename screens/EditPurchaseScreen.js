@@ -40,38 +40,42 @@ export default function EditPurchaseScreen({
     isAdmin,
   } = route.params;
 
-  const [purchaserName,
-    setPurchaserName] =
-    useState(
-      purchase
-        ?.purchaser_name ||
+  const [
+    purchaserName,
+    setPurchaserName,
+  ] = useState(
+    purchase
+      ?.purchaser_name ||
+      ''
+  );
+
+  const [
+    quantity,
+    setQuantity,
+  ] = useState(
+    purchase?.quantity ||
+      ''
+  );
+
+  const [
+    purchasePrice,
+    setPurchasePrice,
+  ] = useState(
+    String(
+      purchase?.purchase_price ||
         ''
-    );
+    )
+  );
 
-  const [quantity,
-    setQuantity] =
-    useState(
-      purchase?.quantity ||
+  const [
+    finalPrice,
+    setFinalPrice,
+  ] = useState(
+    String(
+      purchase?.final_price ||
         ''
-    );
-
-  const [purchasePrice,
-    setPurchasePrice] =
-    useState(
-      String(
-        purchase?.purchase_price ||
-          ''
-      )
-    );
-
-  const [finalPrice,
-    setFinalPrice] =
-    useState(
-      String(
-        purchase?.final_price ||
-          ''
-      )
-    );
+    )
+  );
 
   const [notes, setNotes] =
     useState(
@@ -85,11 +89,12 @@ export default function EditPurchaseScreen({
       )
     );
 
-  const [showPicker,
-    setShowPicker] =
-    useState(false);
+  const [
+    showPicker,
+    setShowPicker,
+  ] = useState(false);
 
-  // SAVE PURCHASE
+  // SAVE
   const handleSave =
     async () => {
       const { error } =
@@ -140,7 +145,7 @@ export default function EditPurchaseScreen({
       navigation.goBack();
     };
 
-  // DELETE PURCHASE
+  // DELETE
   const handleDelete =
     () => {
       Alert.alert(
@@ -155,6 +160,7 @@ export default function EditPurchaseScreen({
 
           {
             text: 'Delete',
+
             style:
               'destructive',
 
@@ -202,6 +208,9 @@ export default function EditPurchaseScreen({
         contentContainerStyle={
           styles.scroll
         }
+        showsVerticalScrollIndicator={
+          false
+        }
       >
         <Text
           style={styles.heading}
@@ -214,11 +223,17 @@ export default function EditPurchaseScreen({
           <TextInput
             style={styles.input}
             placeholder="Name of Purchaser"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={
               purchaserName
             }
             onChangeText={
               setPurchaserName
+            }
+            selectionColor={
+              COLORS.primary
             }
           />
 
@@ -226,9 +241,15 @@ export default function EditPurchaseScreen({
           <TextInput
             style={styles.input}
             placeholder="Quantity"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={quantity}
             onChangeText={
               setQuantity
+            }
+            selectionColor={
+              COLORS.primary
             }
           />
 
@@ -236,6 +257,9 @@ export default function EditPurchaseScreen({
           <TextInput
             style={styles.input}
             placeholder="Purchase Price"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={
               purchasePrice
             }
@@ -243,25 +267,42 @@ export default function EditPurchaseScreen({
               setPurchasePrice
             }
             keyboardType="numeric"
+            selectionColor={
+              COLORS.primary
+            }
           />
 
           {/* FINAL PRICE */}
           <TextInput
             style={styles.input}
             placeholder="Final Price"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={finalPrice}
             onChangeText={
               setFinalPrice
             }
             keyboardType="numeric"
+            selectionColor={
+              COLORS.primary
+            }
           />
 
           {/* NOTES */}
           <TextInput
             style={styles.input}
             placeholder="Notes"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={notes}
-            onChangeText={setNotes}
+            onChangeText={
+              setNotes
+            }
+            selectionColor={
+              COLORS.primary
+            }
           />
 
           {/* DATE */}
@@ -275,7 +316,11 @@ export default function EditPurchaseScreen({
               )
             }
           >
-            <Text>
+            <Text
+              style={
+                styles.dateText
+              }
+            >
               {date.toLocaleDateString(
                 'en-GB',
                 {
@@ -316,7 +361,7 @@ export default function EditPurchaseScreen({
             />
           )}
 
-          {/* SAVE BUTTON */}
+          {/* SAVE */}
           <TouchableOpacity
             style={
               styles.button
@@ -334,7 +379,7 @@ export default function EditPurchaseScreen({
             </Text>
           </TouchableOpacity>
 
-          {/* DELETE BUTTON */}
+          {/* DELETE */}
           {isAdmin && (
             <TouchableOpacity
               style={
@@ -347,7 +392,7 @@ export default function EditPurchaseScreen({
               <MaterialIcons
                 name="delete"
                 size={22}
-                color="#fff"
+                color="#eef7ff"
               />
 
               <Text
@@ -369,19 +414,24 @@ const styles =
   StyleSheet.create({
     safe: {
       flex: 1,
+
       backgroundColor:
         COLORS.background,
     },
 
     scroll: {
       padding: SPACING.lg,
+
       paddingBottom: 60,
     },
 
     heading: {
       fontSize: 32,
+
       fontWeight: '800',
+
       color: COLORS.text,
+
       marginBottom: 24,
     },
 
@@ -407,6 +457,12 @@ const styles =
       padding: 16,
 
       marginBottom: 18,
+
+      fontSize: 17,
+
+      fontWeight: '500',
+
+      color: COLORS.text,
     },
 
     dateBox: {
@@ -426,6 +482,14 @@ const styles =
         'space-between',
 
       alignItems: 'center',
+    },
+
+    dateText: {
+      fontSize: 17,
+
+      fontWeight: '600',
+
+      color: COLORS.text,
     },
 
     button: {
@@ -460,9 +524,12 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: '#eef7ff',
+
       fontWeight: '700',
+
       fontSize: 16,
+
       marginLeft: 8,
     },
   });

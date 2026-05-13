@@ -384,7 +384,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: COLORS.white,
       fontWeight: '700',
       fontSize: 16,
     },

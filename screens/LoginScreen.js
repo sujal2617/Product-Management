@@ -185,7 +185,7 @@ export default function LoginScreen({
               <MaterialIcons
                 name="inventory-2"
                 size={60}
-                color="#fff"
+                color={COLORS.white}
               />
             </View>
 
@@ -428,7 +428,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: COLORS.white,
       fontSize: 17,
       fontWeight: '700',
     },

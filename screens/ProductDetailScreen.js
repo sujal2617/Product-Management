@@ -261,7 +261,7 @@ export default function ProductDetailScreen({
         <MaterialIcons
           name="add"
           size={34}
-          color="#fff"
+          color={COLORS.white}
         />
       </TouchableOpacity>
     </SafeAreaView>

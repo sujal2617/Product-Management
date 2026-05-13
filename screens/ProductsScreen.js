@@ -121,7 +121,7 @@ export default function ProductsScreen({
             <MaterialIcons
               name="person"
               size={24}
-              color="#fff"
+              color={COLORS.white}
             />
           </TouchableOpacity>
         </View>
@@ -240,7 +240,7 @@ export default function ProductsScreen({
           <MaterialIcons
             name="add"
             size={34}
-            color="#fff"
+            color={COLORS.white}
           />
         </TouchableOpacity>
       </View>
@@ -329,7 +329,9 @@ const styles =
 
       marginLeft: 10,
 
-      fontSize: 16,
+      fontSize: 22,
+
+      fontWeight: '600',
 
       color: COLORS.text,
     },
@@ -367,7 +369,7 @@ const styles =
 
       alignItems: 'center',
 
-      shadowColor: '#000',
+      shadowColor: COLORS.text,
 
       shadowOffset: {
         width: 0,

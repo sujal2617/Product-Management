@@ -42,7 +42,7 @@ export default function ProductCard({
           <MaterialIcons
             name="inventory-2"
             size={28}
-            color="#fff"
+            color={COLORS.white}
           />
         </View>
 

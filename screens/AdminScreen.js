@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  TextInput,
 } from 'react-native';
 
 import {
@@ -39,25 +40,33 @@ export default function AdminScreen({
   const [products, setProducts] =
     useState([]);
 
+  const [search, setSearch] =
+    useState('');
+
   useFocusEffect(
     useCallback(() => {
       fetchProducts();
     }, [])
   );
 
-  const fetchProducts = async () => {
-    const { data, error } =
-      await supabase
+  const fetchProducts =
+    async () => {
+      const {
+        data,
+        error,
+      } = await supabase
         .from('products')
         .select('*')
         .order('name', {
           ascending: true,
         });
 
-    if (!error) {
-      setProducts(data || []);
-    }
-  };
+      if (!error) {
+        setProducts(
+          data || []
+        );
+      }
+    };
 
   const handleDelete =
     async (id) => {
@@ -104,11 +113,27 @@ export default function AdminScreen({
       );
     };
 
+  // SEARCH FILTER
+  const filteredProducts =
+    search.trim() === ''
+      ? products
+      : products.filter(
+          (item) =>
+            item.name
+              ?.toLowerCase()
+              .includes(
+                search
+                  .trim()
+                  .toLowerCase()
+              )
+        );
+
   return (
     <SafeAreaView
       style={styles.safe}
     >
       <View style={styles.container}>
+        {/* HEADING */}
         <Text
           style={styles.heading}
         >
@@ -124,9 +149,58 @@ export default function AdminScreen({
           purchases
         </Text>
 
+        {/* SEARCH */}
+        <View
+          style={styles.searchBox}
+        >
+          <MaterialIcons
+            name="search"
+            size={22}
+            color={
+              COLORS.subText
+            }
+          />
+
+          <TextInput
+            style={
+              styles.searchInput
+            }
+            placeholder="Search Products"
+            placeholderTextColor={
+              COLORS.subText
+            }
+            value={search}
+            onChangeText={
+              setSearch
+            }
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          {search.length >
+            0 && (
+            <TouchableOpacity
+              onPress={() =>
+                setSearch('')
+              }
+            >
+              <MaterialIcons
+                name="close"
+                size={22}
+                color={
+                  COLORS.subText
+                }
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* PRODUCTS */}
         <FlatList
-          data={products}
-          keyExtractor={(item) =>
+          data={filteredProducts}
+          keyExtractor={(
+            item
+          ) =>
             item.id.toString()
           }
           showsVerticalScrollIndicator={
@@ -135,10 +209,13 @@ export default function AdminScreen({
           contentContainerStyle={{
             paddingBottom: 40,
           }}
-          renderItem={({ item }) => (
+          renderItem={({
+            item,
+          }) => (
             <View
               style={styles.card}
             >
+              {/* LEFT */}
               <View
                 style={
                   styles.leftContent
@@ -151,18 +228,9 @@ export default function AdminScreen({
                 >
                   {item.name}
                 </Text>
-
-                <Text
-                  style={
-                    styles.seller
-                  }
-                >
-                  {
-                    item.seller_name
-                  }
-                </Text>
               </View>
 
+              {/* ACTIONS */}
               <View
                 style={
                   styles.actions
@@ -185,7 +253,7 @@ export default function AdminScreen({
                   <MaterialIcons
                     name="edit"
                     size={22}
-                    color="#fff"
+                    color={COLORS.white}
                   />
                 </TouchableOpacity>
 
@@ -202,12 +270,35 @@ export default function AdminScreen({
                   <MaterialIcons
                     name="delete"
                     size={22}
-                    color="#fff"
+                    color={COLORS.white}
                   />
                 </TouchableOpacity>
               </View>
             </View>
           )}
+          ListEmptyComponent={
+            <View
+              style={
+                styles.emptyBox
+              }
+            >
+              <MaterialIcons
+                name="inventory"
+                size={70}
+                color={
+                  COLORS.subText
+                }
+              />
+
+              <Text
+                style={
+                  styles.emptyText
+                }
+              >
+                No Products Found
+              </Text>
+            </View>
+          }
         />
       </View>
     </SafeAreaView>
@@ -238,9 +329,43 @@ const styles =
       marginTop: 8,
       color: COLORS.subText,
       fontSize: 16,
-      marginBottom: 28,
+      marginBottom: 24,
     },
 
+    // SEARCH
+    searchBox: {
+      flexDirection: 'row',
+
+      alignItems: 'center',
+
+      backgroundColor:
+        COLORS.white,
+
+      borderRadius:
+        RADIUS.md,
+
+      paddingHorizontal: 16,
+
+      marginBottom: 22,
+
+      height: 62,
+
+      ...SHADOW,
+    },
+
+    searchInput: {
+      flex: 1,
+
+      marginLeft: 10,
+
+      fontSize: 22,
+
+      fontWeight: '600',
+
+      color: COLORS.text,
+    },
+
+    // CARD
     card: {
       backgroundColor:
         COLORS.white,
@@ -248,7 +373,9 @@ const styles =
       borderRadius:
         RADIUS.lg,
 
-      padding: SPACING.lg,
+      minHeight: 82,
+
+      paddingHorizontal: 18,
 
       marginBottom: 18,
 
@@ -264,30 +391,31 @@ const styles =
 
     leftContent: {
       flex: 1,
-      marginRight: 10,
+
+      justifyContent:
+        'center',
     },
 
     name: {
       fontSize: 18,
-      fontWeight: '700',
-      color: COLORS.text,
-    },
 
-    seller: {
-      marginTop: 6,
-      color: COLORS.subText,
-      fontSize: 15,
+      fontWeight: '700',
+
+      color: COLORS.text,
     },
 
     actions: {
       flexDirection: 'row',
+
       alignItems: 'center',
     },
 
     editButton: {
-      width: 46,
-      height: 46,
-      borderRadius: 14,
+      width: 50,
+
+      height: 50,
+
+      borderRadius: 15,
 
       backgroundColor:
         COLORS.primary,
@@ -301,9 +429,11 @@ const styles =
     },
 
     deleteButton: {
-      width: 46,
-      height: 46,
-      borderRadius: 14,
+      width: 50,
+
+      height: 50,
+
+      borderRadius: 15,
 
       backgroundColor:
         COLORS.danger,
@@ -312,5 +442,20 @@ const styles =
         'center',
 
       alignItems: 'center',
+    },
+
+    emptyBox: {
+      alignItems: 'center',
+      marginTop: 80,
+    },
+
+    emptyText: {
+      marginTop: 16,
+
+      fontSize: 18,
+
+      fontWeight: '600',
+
+      color: COLORS.subText,
     },
   });

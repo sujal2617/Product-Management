@@ -15,6 +15,7 @@ import {
 
 import {
   NavigationContainer,
+  DarkTheme,
 } from '@react-navigation/native';
 
 import {
@@ -32,6 +33,7 @@ import {
 import { auth } from './lib/firebase';
 
 import LoginScreen from './screens/LoginScreen';
+
 import RegisterScreen from './screens/RegisterScreen';
 
 import ProductsScreen from './screens/ProductsScreen';
@@ -55,6 +57,28 @@ import { COLORS } from './theme';
 const Stack =
   createNativeStackNavigator();
 
+// CUSTOM DARK NAVIGATION THEME
+const CustomDarkTheme = {
+  ...DarkTheme,
+
+  colors: {
+    ...DarkTheme.colors,
+
+    background:
+      COLORS.background,
+
+    card: COLORS.white,
+
+    text: COLORS.text,
+
+    border:
+      COLORS.border,
+
+    primary:
+      COLORS.primary,
+  },
+};
+
 export default function App() {
   const [user, setUser] =
     useState(null);
@@ -76,15 +100,19 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  // LOADING
+  // LOADING SCREEN
   if (loading) {
     return (
       <View
         style={{
           flex: 1,
+
           justifyContent:
             'center',
-          alignItems: 'center',
+
+          alignItems:
+            'center',
+
           backgroundColor:
             COLORS.background,
         }}
@@ -99,14 +127,21 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      {/* STATUS BAR */}
       <StatusBar
-        barStyle="dark-content"
+        translucent={false}
+        barStyle="light-content"
         backgroundColor={
           COLORS.background
         }
       />
 
-      <NavigationContainer>
+      {/* NAVIGATION */}
+      <NavigationContainer
+        theme={
+          CustomDarkTheme
+        }
+      >
         <Stack.Navigator
           screenOptions={{
             animation:
@@ -127,7 +162,8 @@ export default function App() {
               COLORS.text,
 
             headerTitleStyle: {
-              fontWeight: '700',
+              fontWeight: '800',
+
               fontSize: 18,
             },
 

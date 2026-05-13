@@ -97,7 +97,7 @@ export default function PurchaseCard({
           <MaterialIcons
             name="edit"
             size={17}
-            color="#fff"
+            color={COLORS.white}
           />
 
           <Text
@@ -117,7 +117,7 @@ const styles =
   StyleSheet.create({
     card: {
       backgroundColor:
-        '#cbf5dd',
+        '#006100',
 
       borderRadius:
         RADIUS.md,
@@ -209,7 +209,7 @@ const styles =
     },
 
     editText: {
-      color: '#fff',
+      color: COLORS.white,
 
       fontWeight: '700',
 

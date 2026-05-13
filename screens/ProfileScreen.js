@@ -55,50 +55,51 @@ export default function ProfileScreen({
     }, [])
   );
 
-  const fetchUser = async () => {
-    try {
-      const firebaseUser =
-        auth.currentUser;
+  const fetchUser =
+    async () => {
+      try {
+        const firebaseUser =
+          auth.currentUser;
 
-      if (!firebaseUser) {
+        if (!firebaseUser) {
+          setLoading(false);
+          return;
+        }
+
+        const {
+          data,
+          error,
+        } = await supabase
+          .from('users')
+          .select('*')
+          .eq(
+            'id',
+            firebaseUser.uid
+          )
+          .single();
+
+        if (error) {
+          console.log(error);
+
+          Alert.alert(
+            'Error',
+            'Failed to load profile'
+          );
+
+          setLoading(false);
+
+          return;
+        }
+
+        setUserData(data);
+
         setLoading(false);
-        return;
-      }
-
-      const {
-        data,
-        error,
-      } = await supabase
-        .from('users')
-        .select('*')
-        .eq(
-          'id',
-          firebaseUser.uid
-        )
-        .single();
-
-      if (error) {
+      } catch (error) {
         console.log(error);
 
-        Alert.alert(
-          'Error',
-          'Failed to load profile'
-        );
-
         setLoading(false);
-
-        return;
       }
-
-      setUserData(data);
-
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-
-      setLoading(false);
-    }
-  };
+    };
 
   const handleLogout =
     async () => {
@@ -162,7 +163,9 @@ export default function ProfileScreen({
             <MaterialIcons
               name="person"
               size={56}
-              color="#fff"
+              color={
+                COLORS.white
+              }
             />
           </View>
 
@@ -188,7 +191,9 @@ export default function ProfileScreen({
               <MaterialIcons
                 name="phone"
                 size={20}
-                color="#fff"
+                color={
+                  COLORS.white
+                }
               />
             </View>
 
@@ -224,7 +229,9 @@ export default function ProfileScreen({
               <MaterialIcons
                 name="email"
                 size={20}
-                color="#fff"
+                color={
+                  COLORS.white
+                }
               />
             </View>
 
@@ -266,7 +273,9 @@ export default function ProfileScreen({
               <MaterialIcons
                 name="admin-panel-settings"
                 size={20}
-                color="#fff"
+                color={
+                  COLORS.white
+                }
               />
             </View>
 
@@ -310,7 +319,9 @@ export default function ProfileScreen({
             <MaterialIcons
               name="admin-panel-settings"
               size={24}
-              color="#fff"
+              color={
+                COLORS.white
+              }
             />
 
             <Text
@@ -333,7 +344,9 @@ export default function ProfileScreen({
           <MaterialIcons
             name="logout"
             size={24}
-            color="#fff"
+            color={
+              COLORS.white
+            }
           />
 
           <Text
@@ -359,32 +372,42 @@ const styles =
 
     loadingContainer: {
       flex: 1,
+
       justifyContent:
         'center',
+
       alignItems: 'center',
     },
 
     loadingText: {
       marginTop: 16,
+
       fontSize: 18,
+
       color: COLORS.subText,
+
       fontWeight: '600',
     },
 
     scroll: {
       padding: SPACING.lg,
+
       paddingBottom: 50,
     },
 
     header: {
       alignItems: 'center',
+
       marginTop: 20,
+
       marginBottom: 30,
     },
 
     avatar: {
       width: 120,
+
       height: 120,
+
       borderRadius: 60,
 
       backgroundColor:
@@ -402,15 +425,21 @@ const styles =
 
     name: {
       fontSize: 30,
+
       fontWeight: '800',
+
       color: COLORS.text,
+
       textAlign: 'center',
     },
 
     email: {
       marginTop: 8,
+
       color: COLORS.subText,
+
       fontSize: 15,
+
       textAlign: 'center',
     },
 
@@ -436,7 +465,9 @@ const styles =
 
     iconBox: {
       width: 46,
+
       height: 46,
+
       borderRadius: 14,
 
       backgroundColor:
@@ -456,13 +487,17 @@ const styles =
 
     label: {
       color: COLORS.subText,
+
       fontSize: 13,
+
       marginBottom: 4,
     },
 
     info: {
       color: COLORS.text,
+
       fontSize: 16,
+
       fontWeight: '700',
     },
 
@@ -509,9 +544,12 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: COLORS.white,
+
       fontWeight: '700',
+
       fontSize: 16,
+
       marginLeft: 10,
     },
   });

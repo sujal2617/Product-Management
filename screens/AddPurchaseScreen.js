@@ -38,21 +38,25 @@ export default function AddPurchaseScreen({
   const { productId } =
     route.params;
 
-  const [sellerName,
-    setSellerName] =
-    useState('');
+  const [
+    sellerName,
+    setSellerName,
+  ] = useState('');
 
-  const [quantity,
-    setQuantity] =
-    useState('');
+  const [
+    quantity,
+    setQuantity,
+  ] = useState('');
 
-  const [purchasePrice,
-    setPurchasePrice] =
-    useState('');
+  const [
+    purchasePrice,
+    setPurchasePrice,
+  ] = useState('');
 
-  const [finalPrice,
-    setFinalPrice] =
-    useState('');
+  const [
+    finalPrice,
+    setFinalPrice,
+  ] = useState('');
 
   const [notes, setNotes] =
     useState('');
@@ -60,9 +64,10 @@ export default function AddPurchaseScreen({
   const [date, setDate] =
     useState(new Date());
 
-  const [showPicker,
-    setShowPicker] =
-    useState(false);
+  const [
+    showPicker,
+    setShowPicker,
+  ] = useState(false);
 
   const handleSave =
     async () => {
@@ -135,6 +140,9 @@ export default function AddPurchaseScreen({
         contentContainerStyle={
           styles.scroll
         }
+        showsVerticalScrollIndicator={
+          false
+        }
       >
         <Text
           style={styles.heading}
@@ -143,51 +151,87 @@ export default function AddPurchaseScreen({
         </Text>
 
         <View style={styles.card}>
+          {/* PURCHASER */}
           <TextInput
             style={styles.input}
             placeholder="Name of Purchaser"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={sellerName}
             onChangeText={
               setSellerName
             }
+            selectionColor={
+              COLORS.primary
+            }
           />
 
+          {/* QUANTITY */}
           <TextInput
             style={styles.input}
             placeholder="Quantity"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={quantity}
             onChangeText={
               setQuantity
             }
+            selectionColor={
+              COLORS.primary
+            }
           />
 
+          {/* PURCHASE PRICE */}
           <TextInput
             style={styles.input}
             placeholder="Purchase Price"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={purchasePrice}
             onChangeText={
               setPurchasePrice
             }
             keyboardType="numeric"
+            selectionColor={
+              COLORS.primary
+            }
           />
 
+          {/* FINAL PRICE */}
           <TextInput
             style={styles.input}
             placeholder="Final Price"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={finalPrice}
             onChangeText={
               setFinalPrice
             }
             keyboardType="numeric"
+            selectionColor={
+              COLORS.primary
+            }
           />
 
+          {/* NOTES */}
           <TextInput
             style={styles.input}
             placeholder="Notes"
+            placeholderTextColor={
+              COLORS.subText
+            }
             value={notes}
             onChangeText={setNotes}
+            selectionColor={
+              COLORS.primary
+            }
           />
 
+          {/* DATE */}
           <TouchableOpacity
             style={
               styles.dateBox
@@ -198,7 +242,11 @@ export default function AddPurchaseScreen({
               )
             }
           >
-            <Text>
+            <Text
+              style={
+                styles.dateText
+              }
+            >
               {date.toLocaleDateString(
                 'en-GB',
                 {
@@ -239,6 +287,7 @@ export default function AddPurchaseScreen({
             />
           )}
 
+          {/* SAVE */}
           <TouchableOpacity
             style={
               styles.button
@@ -263,6 +312,7 @@ const styles =
   StyleSheet.create({
     safe: {
       flex: 1,
+
       backgroundColor:
         COLORS.background,
     },
@@ -273,8 +323,11 @@ const styles =
 
     heading: {
       fontSize: 32,
+
       fontWeight: '800',
+
       color: COLORS.text,
+
       marginBottom: 24,
     },
 
@@ -297,9 +350,15 @@ const styles =
       borderRadius:
         RADIUS.sm,
 
-      padding: 16,
+      padding: 18,
 
       marginBottom: 18,
+
+      fontSize: 16,
+
+      fontWeight: '600',
+
+      color: COLORS.text,
     },
 
     dateBox: {
@@ -317,6 +376,16 @@ const styles =
 
       justifyContent:
         'space-between',
+
+      alignItems: 'center',
+    },
+
+    dateText: {
+      fontSize: 16,
+
+      fontWeight: '600',
+
+      color: COLORS.text,
     },
 
     button: {
@@ -332,8 +401,10 @@ const styles =
     },
 
     buttonText: {
-      color: '#fff',
+      color: '#eef7ff',
+
       fontWeight: '700',
+
       fontSize: 16,
     },
   });
