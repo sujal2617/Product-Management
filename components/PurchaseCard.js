@@ -42,7 +42,7 @@ export default function PurchaseCard({
         <MaterialIcons
           name="calendar-month"
           size={17}
-          color={COLORS.primary}
+          color="#2d8cff"
         />
 
         <Text style={styles.date}>
@@ -97,7 +97,7 @@ export default function PurchaseCard({
           <MaterialIcons
             name="edit"
             size={17}
-            color={COLORS.white}
+            color="#fff"
           />
 
           <Text
@@ -117,7 +117,7 @@ const styles =
   StyleSheet.create({
     card: {
       backgroundColor:
-        '#006100',
+        '#cbf5dd',
 
       borderRadius:
         RADIUS.md,
@@ -169,7 +169,11 @@ const styles =
 
       fontWeight: '800',
 
-      color: COLORS.primary,
+      color: '#2d8cff',
+
+      lineHeight: 22,
+
+      includeFontPadding: false,
     },
 
     finalPrice: {
@@ -177,7 +181,11 @@ const styles =
 
       fontWeight: '800',
 
-      color: '#ed4545',
+      color: '#ff3b3b',
+
+      lineHeight: 22,
+
+      includeFontPadding: false,
     },
 
     note: {
@@ -194,7 +202,7 @@ const styles =
       marginTop: 14,
 
       backgroundColor:
-        COLORS.primary,
+        '#2d8cff',
 
       borderRadius: 12,
 
@@ -209,7 +217,7 @@ const styles =
     },
 
     editText: {
-      color: COLORS.white,
+      color: '#fff',
 
       fontWeight: '700',
 

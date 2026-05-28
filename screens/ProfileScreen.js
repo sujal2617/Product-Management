@@ -334,6 +334,23 @@ export default function ProfileScreen({
           </TouchableOpacity>
         )}
 
+        <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() =>
+                navigation.navigate('Notes')
+            }
+        >
+          <MaterialIcons
+              name="note-alt"
+              size={22}
+              color="#fff"
+          />
+
+          <Text style={styles.actionText}>
+            Notes
+          </Text>
+        </TouchableOpacity>
+
         {/* LOGOUT */}
         <TouchableOpacity
           style={
@@ -541,6 +558,24 @@ const styles =
       alignItems: 'center',
 
       ...SHADOW,
+    },
+
+    actionButton: {
+      backgroundColor: '#5B8DEF',
+      borderRadius: RADIUS.md,
+      padding: 18,
+      marginTop: 16,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...SHADOW,
+    },
+
+    actionText: {
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: 16,
+      marginLeft: 10,
     },
 
     buttonText: {

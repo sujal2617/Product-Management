@@ -266,26 +266,29 @@ export default function AddPurchaseScreen({
             />
           </TouchableOpacity>
 
-          {showPicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              onChange={(
-                e,
-                selected
-              ) => {
-                setShowPicker(
-                  false
-                );
+            {showPicker && (
+                <View style={styles.pickerContainer}>
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="spinner"
+                        onChange={(event, selectedDate) => {
+                            if (selectedDate) {
+                                setDate(selectedDate);
+                            }
+                        }}
+                    />
 
-                if (selected) {
-                  setDate(
-                    selected
-                  );
-                }
-              }}
-            />
-          )}
+                    <TouchableOpacity
+                        style={styles.doneButton}
+                        onPress={() => setShowPicker(false)}
+                    >
+                        <Text style={styles.doneText}>
+                            Done
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
           {/* SAVE */}
           <TouchableOpacity
@@ -407,4 +410,25 @@ const styles =
 
       fontSize: 16,
     },
+
+      pickerContainer: {
+          backgroundColor: COLORS.white,
+          borderRadius: RADIUS.md,
+          marginBottom: 20,
+          padding: 10,
+      },
+
+      doneButton: {
+          backgroundColor: COLORS.primary,
+          paddingVertical: 12,
+          borderRadius: 12,
+          alignItems: 'center',
+          marginTop: 8,
+      },
+
+      doneText: {
+          color: '#fff',
+          fontWeight: '700',
+          fontSize: 16,
+      },
   });

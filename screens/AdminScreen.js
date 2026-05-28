@@ -149,6 +149,8 @@ export default function AdminScreen({
           purchases
         </Text>
 
+
+
         {/* SEARCH */}
         <View
           style={styles.searchBox}
@@ -458,4 +460,22 @@ const styles =
 
       color: COLORS.subText,
     },
+
+      notesButton: {
+          backgroundColor: COLORS.primary,
+          height: 54,
+          borderRadius: RADIUS.md,
+          marginBottom: 18,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...SHADOW,
+      },
+
+      notesButtonText: {
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: '700',
+          marginLeft: 8,
+      },
   });

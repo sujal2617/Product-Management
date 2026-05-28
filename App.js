@@ -52,6 +52,8 @@ import ProfileScreen from './screens/ProfileScreen';
 
 import AdminScreen from './screens/AdminScreen';
 
+import NotesScreen from './screens/NotesScreen';
+
 import { COLORS } from './theme';
 
 const Stack =
@@ -130,7 +132,8 @@ export default function App() {
       {/* STATUS BAR */}
       <StatusBar
         translucent={false}
-        barStyle="light-content"
+//        barStyle="light-content"
+        barStyle="dark-content"
         backgroundColor={
           COLORS.background
         }
@@ -274,6 +277,15 @@ export default function App() {
                     'Edit Product',
                 }}
               />
+
+                {/* NOTES */}
+                <Stack.Screen
+                    name="Notes"
+                    component={NotesScreen}
+                    options={{
+                        title: 'Notes',
+                    }}
+                />
 
               {/* PROFILE */}
               <Stack.Screen
