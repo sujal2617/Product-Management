@@ -49,23 +49,37 @@ export default function AdminScreen({
     }, [])
   );
 
-  const fetchProducts =
-    async () => {
-      const {
-        data,
-        error,
-      } = await supabase
-        .from('products')
-        .select('*')
-        .order('name', {
-          ascending: true,
-        });
+    const fetchProducts = async () => {
+        const {
+            data,
+            error,
+        } = await supabase
+            .from('products')
+            .select('*')
+            .order('name', {
+                ascending: true,
+            })
+            .range(0, 5000);
 
-      if (!error) {
-        setProducts(
-          data || []
+        if (error) {
+            console.log(
+                'SUPABASE ERROR:',
+                error
+            );
+            return;
+        }
+
+        console.log(
+            'ADMIN TOTAL PRODUCTS:',
+            data?.length
         );
-      }
+
+        console.log(
+            'ADMIN LAST PRODUCT:',
+            data?.[data.length - 1]
+        );
+
+        setProducts(data || []);
     };
 
   const handleDelete =

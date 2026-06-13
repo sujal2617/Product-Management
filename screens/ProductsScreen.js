@@ -50,23 +50,42 @@ export default function ProductsScreen({
     }, [])
   );
 
-  const fetchProducts =
-    async () => {
-      const {
-        data,
-        error,
-      } = await supabase
-        .from('products')
-        .select('*')
-        .order('name', {
-          ascending: true,
-        });
+    const fetchProducts = async () => {
+        const {
+            data,
+            error,
+        } = await supabase
+            .from('products')
+            .select('*')
+            .order('name', {
+                ascending: true,
+            })
+            .range(0, 5000);
 
-      if (!error) {
-        setProducts(
-          data || []
+        if (error) {
+            console.log(
+                'SUPABASE ERROR:',
+                error
+            );
+            return;
+        }
+
+        console.log(
+            'TOTAL PRODUCTS:',
+            data?.length
         );
-      }
+
+        console.log(
+            'FIRST PRODUCT:',
+            data?.[0]
+        );
+
+        console.log(
+            'LAST PRODUCT:',
+            data?.[data.length - 1]
+        );
+
+        setProducts(data || []);
     };
 
   // PARTIAL SEARCH FILTER
