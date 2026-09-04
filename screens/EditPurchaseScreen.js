@@ -346,7 +346,7 @@ export default function EditPurchaseScreen({
                         value={date}
                         mode="date"
                         display="spinner"
-                        onChange={(event, selectedDate) => {
+                        onValueChange={(event, selectedDate) => {
                             if (selectedDate) {
                                 setDate(selectedDate);
                             }
