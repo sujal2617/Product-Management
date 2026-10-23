@@ -23,3 +23,7 @@ Report, short:
 - Findings or changes, each with file:line, the risk in one sentence, and the fix.
 - Exact steps Sujal must do by hand (Supabase dashboard, Firebase console), numbered.
 - What you could not verify.
+
+## Teamwork
+
+In team mode: review data changes that `builder` messages you about, and reply with approve or the exact fixes needed. Send app code changes you need to `builder` instead of editing screens yourself. Message Jarvis (the lead) about anything Sujal must do by hand.

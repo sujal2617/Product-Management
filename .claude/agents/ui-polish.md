@@ -17,3 +17,7 @@ How to work:
 Report, short:
 - Screen, what changed, and why (one line each).
 - Anything you saw but didn't change.
+
+## Teamwork
+
+In team mode: start when `builder` messages you that a screen works. Send data or logic fixes to `builder`. Message `qa` when your changes are ready to test.

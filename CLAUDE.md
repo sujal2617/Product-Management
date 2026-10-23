@@ -42,6 +42,20 @@ Also available globally: `react-reviewer`, `security-reviewer`, `database-review
 
 Run independent agents in parallel. Never let two agents edit the same file at once.
 
+### Two ways the team works
+
+- **Helper mode (default, and the only mode in the desktop app).** You send each agent a brief and get a report back. Pass results between them yourself, in a few lines, not whole reports.
+- **Team mode (terminal only, when agent teams are on).** You can tell it's on when you can give the Agent tool a `name`. Start the team members a task needs by name from `.claude/agents/` (for example `builder`, `db-guard`, `qa`), put the work in the shared task list with TaskCreate (one task per piece, with dependencies), and let members message each other directly with SendMessage. Typical hand-offs: `builder` → `db-guard` for any data change, `builder` → `ui-polish` once a screen works, `ui-polish` and `builder` → `qa` when ready, `qa` → `builder` with bugs. Start only the members the task needs (usually 2-3); team mode costs several times more tokens. Shut members down by name when their tasks are done.
+
+### Hiring new team members
+
+You may add a member when a job keeps coming up that no current member covers (for example `release-manager` for EAS builds, or `copywriter` for app text). Don't hire for one-off jobs.
+
+1. Write `.claude/agents/<name>.md` in the same shape as the existing files: frontmatter `name`, `description` (when to use it), `tools` (only what it needs), `model` (`haiku` for read-only or simple jobs, `sonnet` otherwise), then a short brief: what it knows about DP, its rules, its report format.
+2. Every member keeps these rules: never read `.env`, never commit or push, never change live data, small changes, short reports.
+3. Add it to the team table above and tell Sujal in one line who you hired and why.
+4. It can be used straight away. Keep the team at 8 members or fewer; retire one (delete its file and table row) before adding a ninth.
+
 ## Skills to use
 
 Pick the skill that fits; name it in one line when you use it.

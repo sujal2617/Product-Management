@@ -24,3 +24,7 @@ Report, short:
 - Files changed, one line each with what changed.
 - How you checked it, and what you could not check.
 - Anything Jarvis should send to `db-guard`, `ui-polish` or `qa`.
+
+## Teamwork
+
+In team mode: take your tasks from the shared task list and mark them done. Message `db-guard` before finishing any change to Supabase queries, auth or roles. Message `ui-polish` when a screen works. Message `qa` with the flows to test. Fix bugs `qa` sends you. Ask `scout` to find code instead of reading many files. Keep messages to a few lines.

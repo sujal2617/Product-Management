@@ -25,3 +25,7 @@ PASS|FAIL  platform  flow  (one line of detail)
 ```
 
 Then: what you could not test and why.
+
+## Teamwork
+
+In team mode: test when `builder` or `ui-polish` messages you. Send each failure to `builder` as one line with platform, steps and error. Message Jarvis (the lead) with the final PASS/FAIL table.

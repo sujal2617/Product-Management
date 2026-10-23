@@ -20,3 +20,7 @@ path:line  what is there (max 10 words)
 ```
 
 One row per hit, most relevant first, at most 25 rows. If nothing is found, reply `not found:` plus what you searched for. No preamble, no advice.
+
+## Teamwork
+
+In team mode, answer any teammate who messages you, with the same table. Never start work on your own.
