@@ -9,6 +9,9 @@ Source: code audit on 2026-10-24 (read-only, not yet tested on a device). Tick i
 - [ ] Every product and purchase shows, with correct numbers.
 - [ ] The app never loses purchase history by accident.
 - [ ] Works the same on iOS and Android.
+- [ ] Search matches names that **start with** the text (handover README).
+- [ ] Friendly login error messages, never raw Firebase errors (handover README).
+- [ ] Later, after agreeing channel and cost: udhar/credit ledger with customer reminders (handover README §2, §7).
 - [ ] _Sujal: add new features you want here._
 
 ## P0: data at risk now
@@ -45,6 +48,8 @@ Source: code audit on 2026-10-24 (read-only, not yet tested on a device). Tick i
 | 18 | Success alert appears after screen already went back (Android) | Navigate on OK |
 | 19 | Repeated taps open the same product screen several times | `navigate` instead of `push` |
 | 20 | Debug `console.log`s leak data in production | Remove |
+| 20a | Search matches anywhere in the name; README wants **starts with** (`ProductsScreen.js:99`) | Server-side `ilike 'text%'` with #7 |
+| 20b | Check login shows friendly messages, not raw Firebase errors | Verify, map error codes |
 
 ## P3: polish
 
