@@ -38,3 +38,6 @@ yarn-error.*
 /ios
 /android
 /.env
+
+# Database backups (contain user emails/phones)
+/backup/
