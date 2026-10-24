@@ -104,21 +104,29 @@ export default function LoginScreen({
 
         // IF PHONE → GET EMAIL FROM SUPABASE
         if (isPhone) {
-          const {
-            data,
+          let {
+            data: phoneEmail,
             error,
-          } = await supabase
-            .from('users')
-            .select('email')
-            .eq(
-              'phone',
-              loginEmail
-            )
-            .single();
+          } = await supabase.rpc(
+            'login_email_for_phone',
+            { p_phone: loginEmail }
+          );
+
+          // RPC not created yet (SQL 001 not applied): use the old lookup.
+          if (error?.code === 'PGRST202') {
+            const old = await supabase
+              .from('users')
+              .select('email')
+              .eq('phone', loginEmail)
+              .single();
+
+            phoneEmail = old.data?.email;
+            error = old.error;
+          }
 
           if (
             error ||
-            !data
+            !phoneEmail
           ) {
             Alert.alert(
               'Login Error',
@@ -129,7 +137,7 @@ export default function LoginScreen({
           }
 
           loginEmail =
-            data.email;
+            phoneEmail;
         }
 
         // FIREBASE LOGIN
@@ -138,6 +146,9 @@ export default function LoginScreen({
           loginEmail,
           password
         );
+
+        // Reload the token once so a newly set role claim is included.
+        await auth.currentUser?.getIdToken(true);
 
         // Auth listener in App.js navigates on success.
       } catch (error) {

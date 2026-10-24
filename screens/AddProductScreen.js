@@ -22,6 +22,8 @@ import {
 
 import { supabase } from '../lib/supabase';
 
+import { auth } from '../lib/firebase';
+
 import { escapeLike } from '../utils/validation';
 
 import {
@@ -108,6 +110,7 @@ const handleSave = () =>
           .from('products')
           .insert({
             name: trimmed,
+            created_by: auth.currentUser?.uid ?? null,
           });
 
       setSaving(false);

@@ -84,17 +84,7 @@ export default function RegisterScreen({
         const firebaseUser =
           userCredential.user;
 
-        let role = 'user';
-
-        if (
-          email
-            .trim()
-            .toLowerCase() ===
-          'sujalpattewar26@gmail.com'
-        ) {
-          role = 'admin';
-        }
-
+        // Never send role: it is set by the admin script, not the app.
         const { error } =
           await supabase
             .from('users')
@@ -111,14 +101,13 @@ export default function RegisterScreen({
                 email
                   .trim()
                   .toLowerCase(),
-
-              role,
             });
 
         if (error) {
+          // RLS blocks self-insert; the admin approves the account.
           Alert.alert(
-            'Database Error',
-            error.message
+            'Account created',
+            'Account created. Ask the admin to approve you.'
           );
 
           return;
