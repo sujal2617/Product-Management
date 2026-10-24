@@ -76,7 +76,7 @@ export default function ProfileScreen({
             'id',
             firebaseUser.uid
           )
-          .single();
+          .maybeSingle();
 
         if (error) {
           if (__DEV__) console.warn(error);
@@ -89,6 +89,13 @@ export default function ProfileScreen({
           setLoading(false);
 
           return;
+        }
+
+        if (!data) {
+          Alert.alert(
+            'Profile not found',
+            'Your account is not approved yet. Ask the admin.'
+          );
         }
 
         setUserData(data);
