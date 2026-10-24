@@ -5,7 +5,8 @@ Read this, `docs/BACKLOG.md` and `docs/HANDOVER.md` at the start of every sessio
 
 ## Current state
 
-- **Phase:** P0 security (RLS). Plan written, waiting for Sujal's OK to build.
+- **Phase:** App bug fixes in PR #5 (not yet phone-tested). Next: RLS build.
+- **Launcher:** `start-app.command` (tunnel, works on any network).
 - **Run/test:** Expo Go on iPhone 15 Plus and OnePlus Nord 2 (`npx expo start`). No installed EAS build in use.
 - **Git:** Jarvis pushes to a branch per task and opens a PR; Sujal merges to `main`.
 - **Supabase RLS:** OFF on all tables (Sujal turned it off because app writes were blocked).
@@ -17,12 +18,17 @@ Read this, `docs/BACKLOG.md` and `docs/HANDOVER.md` at the start of every sessio
 |---|---|---|
 | 2026-10-24 | Admin-only edit/delete for products, purchases, users; members read and add | Handover README |
 | 2026-10-24 | Users: Sujal = admin, father = admin, uncle = user | Sujal |
+| 2026-10-24 | Both prices required on new/edited purchases; quantity stays free text | Sujal (father) |
 | 2026-10-24 | Keep phone + email login | Handover README |
 | 2026-10-24 | Stay on free Firebase plan; new users approved by hand with a script | Sujal |
 | 2026-10-24 | Product search = name **starts with** the text | Handover README |
 | 2026-10-24 | Udhar/credit-reminder feature: idea only, agree channel/cost before building | Handover README |
 
 ## Log
+
+- 2026-10-24 · Jarvis · Bug fixes PR #5: all products load, price checks (Indian commas), safe saves/deletes, friendly login errors, tunnel launcher.
+- 2026-10-24 · Sujal · Fixed missing prices in DB; deleted Amratdhara bottle purchase on purpose. 'Testing Powder' is a real product.
+- 2026-10-24 · Jarvis · Set Prashant (uncle) role to user, with Sujal's OK.
 
 - 2026-10-24 · Jarvis · Applied README decisions to RLS plan (PR #3).
 - 2026-10-24 · Sujal · Shared handover README → saved as `docs/HANDOVER.md`.
