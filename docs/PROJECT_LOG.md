@@ -16,6 +16,7 @@ Read this, `docs/BACKLOG.md` and `docs/HANDOVER.md` at the start of every sessio
 | Date | Decision | Source |
 |---|---|---|
 | 2026-10-24 | Admin-only edit/delete for products, purchases, users; members read and add | Handover README |
+| 2026-10-24 | Users: Sujal = admin, father = admin, uncle = user | Sujal |
 | 2026-10-24 | Keep phone + email login | Handover README |
 | 2026-10-24 | Stay on free Firebase plan; new users approved by hand with a script | Sujal |
 | 2026-10-24 | Product search = name **starts with** the text | Handover README |
