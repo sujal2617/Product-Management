@@ -5,4 +5,5 @@
 # Uses a tunnel, so the phone works on any network (mobile data or other Wi-Fi).
 # Keep this window open while using the app; close it to stop.
 cd "$(dirname "$0")"
+npm install
 npx expo start --go --tunnel --clear
