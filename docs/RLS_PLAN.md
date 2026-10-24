@@ -15,16 +15,16 @@ Status: plan only. Nothing applied. Written from code reading, not from the live
 ### Assumptions (change if wrong)
 - `users.id` is `text` (Firebase uid is not a UUID). `users.phone` and `users.email` are text.
 - Roles: `admin` and `user`. All real users are trusted shop staff.
-- `purchases` and `products` have no owner column, so "edit your own purchase" cannot be enforced. Assumption: **any approved user can add and edit products and purchases; only admin deletes anything**; any approved user can read and edit the one shared `app_notes` row (it is a shared shop note); nobody can insert or delete notes from the app.
+- `purchases` and `products` have no owner column, so "edit your own purchase" cannot be enforced. Decided (handover README, 2026-10-24: "Admin-only editing for products, purchases, and users"): **approved users can read and add products and purchases; only admin edits or deletes them, and only admin edits user details.** Any approved user can read and edit the one shared `app_notes` row; nobody can insert or delete notes from the app.
 - `app_notes` has exactly one row already.
 
 ### Policy matrix (before -> after)
 
 | Table | Read | Insert | Update | Delete |
 |---|---|---|---|---|
-| products | before: everyone with anon key. after: approved users | before: everyone. after: approved users | before: everyone. after: approved users | before: everyone. after: admin only (via RPC or policy) |
-| purchases | same as products | approved users | approved users | admin only |
-| users | before: everyone (emails and phones leak). after: own row; admin reads all | before: everyone (can self-grant admin). after: admin only (created by script, service role bypasses RLS) | before: everyone. after: own row, columns `name`, `phone` only; `role`, `email`, `id` locked | admin only |
+| products | before: everyone with anon key. after: approved users | before: everyone. after: approved users | before: everyone. after: admin only | before: everyone. after: admin only (via RPC or policy) |
+| purchases | same as products | approved users | admin only | admin only |
+| users | before: everyone (emails and phones leak). after: own row; admin reads all | before: everyone (can self-grant admin). after: admin only (created by script, service role bypasses RLS) | before: everyone. after: admin only, columns `name`, `phone` only; `role`, `email`, `id` locked | admin only |
 | app_notes | before: everyone. after: approved users | nobody (service role only) | approved users | nobody |
 | anon (no token) | before: all four tables full access. after: nothing, except RPC `login_email_for_phone` |  |  |  |
 
@@ -128,7 +128,7 @@ drop policy if exists products_update on public.products;
 drop policy if exists products_delete on public.products;
 create policy products_select on public.products for select to authenticated using (public.is_member());
 create policy products_insert on public.products for insert to authenticated with check (public.is_member());
-create policy products_update on public.products for update to authenticated using (public.is_member()) with check (public.is_member());
+create policy products_update on public.products for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy products_delete on public.products for delete to authenticated using (public.is_admin());
 
 -- purchases
@@ -138,7 +138,7 @@ drop policy if exists purchases_update on public.purchases;
 drop policy if exists purchases_delete on public.purchases;
 create policy purchases_select on public.purchases for select to authenticated using (public.is_member());
 create policy purchases_insert on public.purchases for insert to authenticated with check (public.is_member());
-create policy purchases_update on public.purchases for update to authenticated using (public.is_member()) with check (public.is_member());
+create policy purchases_update on public.purchases for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy purchases_delete on public.purchases for delete to authenticated using (public.is_admin());
 
 -- users: own row (admin: all). No client insert. Role locked.
@@ -150,11 +150,11 @@ create policy users_select on public.users for select to authenticated
   using (id = public.current_uid() or public.is_admin());
 create policy users_insert on public.users for insert to authenticated with check (public.is_admin());
 create policy users_update on public.users for update to authenticated
-  using (id = public.current_uid() or public.is_admin())
-  with check (id = public.current_uid() or public.is_admin());
+  using (public.is_admin())
+  with check (public.is_admin());
 create policy users_delete on public.users for delete to authenticated using (public.is_admin());
 
--- Column lock: clients may only change name and phone. Role, email, id cannot be changed by the app.
+-- Column lock: admin may only change name and phone from the app. Role, email, id cannot be changed by the app.
 revoke update on public.users from authenticated;
 grant  update (name, phone) on public.users to authenticated;
 grant  select on public.users to authenticated;
@@ -217,12 +217,12 @@ grant all on public.products, public.purchases, public.users, public.app_notes t
 ```
 This returns to today's open state. Then fix the issue and re-apply 002.
 
-## 5. Open questions for Sujal
+## 5. Answers (from handover README and Sujal, 2026-10-24)
 
-1. How does your father run the app: Expo Go, or an EAS-installed build? Installed builds need a new build or update before RLS is switched on.
-2. Keep phone login (small enumeration risk, section 2) or switch to email only (zero risk)?
-3. Are you happy that new sign-ups get no access until you approve them with the script (free-plan trade-off), or do you want the Blaze plan with Identity Platform for auto-approval?
-4. Confirm the assumption: any approved user may add and edit products, purchases and the shared note, and only admin may delete. Should the father (if not admin) be allowed to delete purchases?
+1. App runs in **Expo Go** (iPhone 15 Plus, OnePlus Nord 2). No installed build to update first.
+2. **Keep phone login** (README: "email or mobile number"). Accept the enumeration risk in section 2.
+3. **Stay free**: new users approved by hand with `scripts/approve-user.js`.
+4. **Admin-only edit and delete** for products, purchases and users. Approved users read and add.
 
 ## Could not verify
 - Live schema (id types, existing grants, existing policies, FKs, whether `app_notes` has one row), Supabase plan limits, current Firebase plan, and whether the Firebase provider setting accepts the project in the dashboard. Docs read from the official Supabase page only; the `security-and-hardening` skill could not be invoked in this environment (no Skill tool), so its checklist was applied from general knowledge.
