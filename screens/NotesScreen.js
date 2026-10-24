@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     TextInput,
     StyleSheet,
@@ -27,6 +27,9 @@ export default function NotesScreen() {
     const [noteId, setNoteId] =
         useState(null);
 
+    const [saving, setSaving] =
+        useState(false);
+
     useEffect(() => {
         fetchNote();
     }, []);
@@ -40,6 +43,13 @@ export default function NotesScreen() {
                     .limit(1)
                     .maybeSingle();
 
+            if (error) {
+                Alert.alert(
+                    'Error',
+                    'Could not load notes'
+                );
+            }
+
             if (data) {
                 setNote(
                     data.content || ''
@@ -51,8 +61,22 @@ export default function NotesScreen() {
             setLoading(false);
         };
 
-    const handleSave =
-        async () => {
+    const inFlight = useRef(false);
+    
+      const runGuarded = async (task) => {
+        if (inFlight.current) return;
+        inFlight.current = true;
+        setSaving(true);
+        try {
+          await task();
+        } finally {
+          inFlight.current = false;
+          setSaving(false);
+        }
+      };
+    
+const handleSave = () =>
+        runGuarded(async () => {
             if (!noteId) {
                 Alert.alert(
                     'Error',
@@ -60,6 +84,8 @@ export default function NotesScreen() {
                 );
                 return;
             }
+
+            setSaving(true);
 
             const { error } =
                 await supabase
@@ -75,10 +101,12 @@ export default function NotesScreen() {
                         noteId
                     );
 
+            setSaving(false);
+
             if (error) {
                 Alert.alert(
                     'Error',
-                    error.message
+                    'Failed to save notes'
                 );
                 return;
             }
@@ -87,7 +115,7 @@ export default function NotesScreen() {
                 'Saved',
                 'Notes saved successfully'
             );
-        };
+        });
 
     if (loading) {
         return (
@@ -108,9 +136,16 @@ export default function NotesScreen() {
         >
             <View style={styles.header}>
                 <TouchableOpacity
-                    style={styles.saveButton}
+                    style={[
+                        styles.saveButton,
+                        saving && { opacity: 0.6 },
+                    ]}
                     onPress={handleSave}
+                    disabled={saving}
                 >
+                    {saving ? (
+                        <ActivityIndicator color={COLORS.white} />
+                    ) : (
                     <Text
                         style={
                             styles.saveButtonText
@@ -118,6 +153,7 @@ export default function NotesScreen() {
                     >
                         Save
                     </Text>
+                    )}
                 </TouchableOpacity>
             </View>
 

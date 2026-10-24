@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -37,6 +38,25 @@ import {
   SPACING,
 } from '../theme';
 
+const CREDENTIAL_MESSAGE =
+  'Wrong email/phone or password';
+
+function friendlyMessage(code) {
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-email':
+      return CREDENTIAL_MESSAGE;
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please try again later.';
+    case 'auth/network-request-failed':
+      return 'No internet connection. Please check your network.';
+    default:
+      return 'Login failed. Please try again.';
+  }
+}
+
 export default function LoginScreen({
   navigation,
 }) {
@@ -51,10 +71,15 @@ export default function LoginScreen({
     setShowPassword] =
     useState(false);
 
+  const [loading, setLoading] =
+    useState(false);
+
   const handleLogin =
     async () => {
+      if (loading) return;
+
       if (
-        !email ||
+        !email.trim() ||
         !password
       ) {
         Alert.alert(
@@ -64,6 +89,8 @@ export default function LoginScreen({
 
         return;
       }
+
+      setLoading(true);
 
       try {
         let loginEmail =
@@ -95,7 +122,7 @@ export default function LoginScreen({
           ) {
             Alert.alert(
               'Login Error',
-              'Phone number not found'
+              CREDENTIAL_MESSAGE
             );
 
             return;
@@ -112,44 +139,16 @@ export default function LoginScreen({
           password
         );
 
-        Alert.alert(
-          'Success',
-          'Login Successful'
-        );
+        // Auth listener in App.js navigates on success.
       } catch (error) {
-        console.log(error);
-
-        let message =
-          'Login failed';
-
-        if (
-          error.code ===
-          'auth/invalid-credential'
-        ) {
-          message =
-            'Invalid email/phone or password';
-        }
-
-        if (
-          error.code ===
-          'auth/user-not-found'
-        ) {
-          message =
-            'User not found';
-        }
-
-        if (
-          error.code ===
-          'auth/wrong-password'
-        ) {
-          message =
-            'Incorrect password';
-        }
+        if (__DEV__) console.warn(error?.code);
 
         Alert.alert(
           'Login Error',
-          message
+          friendlyMessage(error?.code)
         );
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -268,13 +267,18 @@ export default function LoginScreen({
 
             {/* LOGIN BUTTON */}
             <TouchableOpacity
-              style={
-                styles.loginButton
-              }
+              style={[
+                styles.loginButton,
+                loading && { opacity: 0.6 },
+              ]}
               onPress={
                 handleLogin
               }
+              disabled={loading}
             >
+              {loading ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
               <Text
                 style={
                   styles.buttonText
@@ -282,6 +286,7 @@ export default function LoginScreen({
               >
                 Login
               </Text>
+              )}
             </TouchableOpacity>
 
             {/* REGISTER */}

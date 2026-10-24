@@ -1,5 +1,6 @@
 import React, {
   useState,
+  useRef,
 } from 'react';
 
 import {
@@ -9,6 +10,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -16,6 +20,8 @@ import {
 } from 'react-native-safe-area-context';
 
 import { supabase } from '../lib/supabase';
+
+import { escapeLike } from '../utils/validation';
 
 import {
   COLORS,
@@ -36,12 +42,68 @@ export default function EditProductScreen({
       product?.name || ''
     );
 
-  const handleSave =
-    async () => {
-      if (!name.trim()) {
+  const [saving, setSaving] =
+    useState(false);
+
+  const inFlight = useRef(false);
+  
+    const runGuarded = async (task) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      setSaving(true);
+      try {
+        await task();
+      } finally {
+        inFlight.current = false;
+        setSaving(false);
+      }
+    };
+  
+const handleSave = () =>
+    runGuarded(async () => {
+      const trimmed = name.trim();
+
+      if (!trimmed) {
         Alert.alert(
           'Missing Field',
           'Enter product name'
+        );
+
+        return;
+      }
+
+      setSaving(true);
+
+      const {
+        data: existing,
+        error: checkError,
+      } = await supabase
+        .from('products')
+        .select('id')
+        .ilike(
+          'name',
+          escapeLike(trimmed)
+        )
+        .neq('id', product.id)
+        .limit(1);
+
+      if (checkError) {
+        setSaving(false);
+
+        Alert.alert(
+          'Error',
+          'Could not check existing products'
+        );
+
+        return;
+      }
+
+      if (existing?.length) {
+        setSaving(false);
+
+        Alert.alert(
+          'Duplicate Product',
+          'Product already exists'
         );
 
         return;
@@ -51,13 +113,14 @@ export default function EditProductScreen({
         await supabase
           .from('products')
           .update({
-            name:
-              name.trim(),
+            name: trimmed,
           })
           .eq(
             'id',
             product.id
           );
+
+      setSaving(false);
 
       if (error) {
         Alert.alert(
@@ -70,16 +133,24 @@ export default function EditProductScreen({
 
       Alert.alert(
         'Success',
-        'Product Updated'
+        'Product Updated',
+        [
+          {
+            text: 'OK',
+            onPress: () =>
+              navigation.goBack(),
+          },
+        ]
       );
-
-      navigation.goBack();
-    };
+    });
 
   return (
     <SafeAreaView
       style={styles.safe}
     >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <View style={styles.card}>
         <Text
           style={styles.heading}
@@ -103,9 +174,16 @@ export default function EditProductScreen({
         />
 
         <TouchableOpacity
-          style={styles.button}
+          style={[
+            styles.button,
+            saving && styles.disabled,
+          ]}
           onPress={handleSave}
+          disabled={saving}
         >
+          {saving ? (
+            <ActivityIndicator color={COLORS.white} />
+          ) : (
           <Text
             style={
               styles.buttonText
@@ -113,8 +191,10 @@ export default function EditProductScreen({
           >
             Save Product
           </Text>
+          )}
         </TouchableOpacity>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -128,6 +208,10 @@ const styles =
         COLORS.background,
 
       padding: SPACING.lg,
+    },
+
+    disabled: {
+      opacity: 0.6,
     },
 
     card: {

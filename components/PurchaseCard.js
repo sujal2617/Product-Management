@@ -65,10 +65,9 @@ export default function PurchaseCard({
       {/* PRICES */}
       <View style={styles.row}>
         <Text style={styles.price}>
-          ₹
-          {
-            item.purchase_price
-          }
+          {item.purchase_price == null
+            ? '–'
+            : `₹${item.purchase_price}`}
         </Text>
 
         <Text
@@ -76,8 +75,9 @@ export default function PurchaseCard({
             styles.finalPrice
           }
         >
-          ₹
-          {item.final_price}
+          {item.final_price == null
+            ? '–'
+            : `₹${item.final_price}`}
         </Text>
       </View>
 
