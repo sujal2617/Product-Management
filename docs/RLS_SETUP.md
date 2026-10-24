@@ -19,6 +19,15 @@ Never commit the files below. They live in your home folder, outside the repo.
 9. Run `supabase/sql/002_enable_rls.sql` in the SQL editor. Test at once on both phones: admin can read, add, edit, delete; a normal user can read and add but not edit or delete; logged out sees nothing.
 10. Rollback if anything fails: run `supabase/sql/rollback.sql` in the SQL editor. Everything returns to the old open state instantly. (If you also need the old app behaviour, set `USE_FIREBASE_TOKEN = false`.)
 
+## Security notes
+
+- After approving users, `chmod 600 ~/secrets/dp-firebase-admin.json` or delete the downloaded Firebase admin JSON.
+- Before running 002, run this in the SQL editor and confirm one row with role = admin (replace the uid with your Firebase uid from Firebase console > Authentication):
+  `select id, email, role from public.users where id = '<your Firebase uid>' and role = 'admin';`
+  If it returns nothing, you would lock yourself out of admin actions.
+- Phone login lookup (`login_email_for_phone`) is open to anon and can be brute-forced to find emails for phone numbers. Accepted risk: owner decided to keep phone login.
+- `rollback.sql` reopens all data publicly. Emergencies only.
+
 ## Approving a new person later
 
 They register in the app (Firebase account only, no data). Then:

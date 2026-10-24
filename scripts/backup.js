@@ -56,7 +56,7 @@ async function main() {
   const config = loadConfig();
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
   const outDir = path.join(ROOT, 'backup', stamp);
-  fs.mkdirSync(outDir, { recursive: true });
+  fs.mkdirSync(outDir, { recursive: true, mode: 0o700 });
 
   let failed = false;
   for (const table of TABLES) {

@@ -79,7 +79,7 @@ export default function ProfileScreen({
           .single();
 
         if (error) {
-          console.log(error);
+          if (__DEV__) console.warn(error);
 
           Alert.alert(
             'Error',
@@ -95,7 +95,7 @@ export default function ProfileScreen({
 
         setLoading(false);
       } catch (error) {
-        console.log(error);
+        if (__DEV__) console.warn(error);
 
         setLoading(false);
       }
@@ -106,7 +106,7 @@ export default function ProfileScreen({
       try {
         await signOut(auth);
       } catch (error) {
-        console.log(error);
+        if (__DEV__) console.warn(error);
 
         Alert.alert(
           'Error',

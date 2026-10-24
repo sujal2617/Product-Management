@@ -67,20 +67,19 @@ async function approveOne(args) {
   const email = args.find((a) => !a.startsWith('--') && !skip.includes(a));
   if (!email) throw new Error('Usage: node scripts/approve-user.js <email> [--admin] [--name N] [--phone P]');
   const user = await admin.auth().getUserByEmail(email.toLowerCase());
-  const role = args.includes('--admin') ? 'admin' : 'user';
+  const makeAdmin = args.includes('--admin');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
     const name = await ask(rl, 'Name', flag(args, '--name') || user.displayName);
     const phone = await ask(rl, 'Phone (digits only)', flag(args, '--phone'));
     if (!/^[0-9]+$/.test(phone)) throw new Error('Phone must be digits only');
+    const existing = await rest('GET', 'users', `?select=role&id=eq.${encodeURIComponent(user.uid)}`);
+    const row = { id: user.uid, name, phone, email: email.toLowerCase() };
+    if (makeAdmin) row.role = 'admin';
+    else if (existing.length === 0) row.role = 'user';
+    await rest('POST', 'users', '?on_conflict=id', row);
     await setClaim(user.uid);
-    await rest('POST', 'users', '?on_conflict=id', {
-      id: user.uid,
-      name,
-      phone,
-      email: email.toLowerCase(),
-      role,
-    });
+    const role = row.role || existing[0].role;
     console.log(`Approved ${email} (${user.uid}) as ${role}.`);
   } finally {
     rl.close();

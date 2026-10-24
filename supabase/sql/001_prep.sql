@@ -7,6 +7,9 @@
 -- Helper: current user's Firebase uid
 create or replace function public.current_uid()
 returns text language sql stable as $$ select auth.jwt() ->> 'sub' $$;
+revoke all on function public.current_uid() from public;
+revoke execute on function public.current_uid() from anon;
+grant execute on function public.current_uid() to authenticated;
 
 -- Helper: is caller an admin (reads users.role, bypasses RLS to avoid recursion)
 create or replace function public.is_admin()
@@ -18,6 +21,7 @@ set search_path = public as $$
   )
 $$;
 revoke all on function public.is_admin() from public;
+revoke execute on function public.is_admin() from anon;
 grant execute on function public.is_admin() to authenticated;
 
 -- Helper: has an approved users row
@@ -27,7 +31,12 @@ set search_path = public as $$
   select exists (select 1 from public.users where id = (auth.jwt() ->> 'sub'))
 $$;
 revoke all on function public.is_member() from public;
+revoke execute on function public.is_member() from anon;
 grant execute on function public.is_member() to authenticated;
+
+-- Audit columns (already exist live as text; guard only)
+alter table public.products add column if not exists created_by text;
+alter table public.purchases add column if not exists created_by text;
 
 -- Data hygiene: valid role, unique phone
 alter table public.users drop constraint if exists users_role_check;
@@ -56,4 +65,5 @@ begin
   delete from public.products  where id = p_id;
 end $$;
 revoke all on function public.admin_delete_product(bigint) from public;
+revoke execute on function public.admin_delete_product(bigint) from anon;
 grant execute on function public.admin_delete_product(bigint) to authenticated;
