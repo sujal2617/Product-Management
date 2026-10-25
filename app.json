@@ -2,11 +2,10 @@
   "expo": {
     "name": "DP",
     "slug": "product-manager",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sujal.dp",
@@ -14,7 +13,6 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -22,29 +20,24 @@
       },
       "package": "com.sujal.dp"
     },
-
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
-
     "updates": {
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/8ad9a9cb-defe-4351-ac35-0bcb6d8ec4c9"
     },
-
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-font"
     ],
-
     "extra": {
       "eas": {
         "projectId": "8ad9a9cb-defe-4351-ac35-0bcb6d8ec4c9"
       }
     },
-
     "owner": "sujal2624",
-
     "runtimeVersion": {
       "policy": "appVersion"
     }
