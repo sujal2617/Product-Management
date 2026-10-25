@@ -281,34 +281,48 @@ export default function AdminScreen({
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            const {
-              error: purchasesError,
-            } = await supabase
-              .from('purchases')
-              .delete()
-              .eq('product_id', id);
+            const { error: rpcError } = await supabase.rpc(
+              'admin_delete_product',
+              { p_id: id }
+            );
 
-            if (purchasesError) {
+            // RPC not created yet (SQL 001 not applied): old two-step delete.
+            if (rpcError?.code === 'PGRST202') {
+              const {
+                error: purchasesError,
+              } = await supabase
+                .from('purchases')
+                .delete()
+                .eq('product_id', id);
+
+              if (purchasesError) {
+                Alert.alert(
+                  'Delete failed',
+                  'Could not delete purchases: ' +
+                    purchasesError.message
+                );
+                return;
+              }
+
+              const {
+                error: productError,
+              } = await supabase
+                .from('products')
+                .delete()
+                .eq('id', id);
+
+              if (productError) {
+                Alert.alert(
+                  'Delete failed',
+                  'Purchases were deleted but the product was not: ' +
+                    productError.message
+                );
+                return;
+              }
+            } else if (rpcError) {
               Alert.alert(
                 'Delete failed',
-                'Could not delete purchases: ' +
-                  purchasesError.message
-              );
-              return;
-            }
-
-            const {
-              error: productError,
-            } = await supabase
-              .from('products')
-              .delete()
-              .eq('id', id);
-
-            if (productError) {
-              Alert.alert(
-                'Delete failed',
-                'Purchases were deleted but the product was not: ' +
-                  productError.message
+                rpcError.message
               );
               return;
             }

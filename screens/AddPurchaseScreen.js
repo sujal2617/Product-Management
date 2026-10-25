@@ -28,6 +28,8 @@ import {
 
 import { supabase } from '../lib/supabase';
 
+import { auth } from '../lib/firebase';
+
 import { parsePrice } from '../utils/validation';
 
 import {
@@ -123,6 +125,7 @@ const handleSave = () =>
           .from('purchases')
           .insert({
             product_id: productId,
+            created_by: auth.currentUser?.uid ?? null,
             purchaser_name: sellerName.trim(),
             quantity: quantity.trim(),
             purchase_price: purchaseValue,
