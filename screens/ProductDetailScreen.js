@@ -1,6 +1,7 @@
 import React, {
   useState,
   useCallback,
+  useRef,
 } from 'react';
 
 import {
@@ -9,7 +10,8 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 
 import {
@@ -41,8 +43,13 @@ export default function ProductDetailScreen({
   route,
   navigation,
 }) {
-  const product =
+  const routeProduct =
     route?.params?.product;
+
+  const productId = routeProduct?.id;
+
+  const [product, setProduct] =
+    useState(routeProduct);
 
   const [purchases,
     setPurchases] =
@@ -51,63 +58,110 @@ export default function ProductDetailScreen({
   const [isAdmin, setIsAdmin] =
     useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (product?.id) {
-        fetchData();
-      }
-    }, [product])
-  );
+  const [loading, setLoading] =
+    useState(true);
 
-  const fetchData =
+  const [refreshing, setRefreshing] =
+    useState(false);
+
+  const [error, setError] =
+    useState(null);
+
+  const [roleError, setRoleError] =
+    useState(false);
+
+  const requestId = useRef(0);
+
+  const fetchData = useCallback(
     async () => {
+      const id = ++requestId.current;
       const firebaseUser =
         auth.currentUser;
 
-      if (firebaseUser) {
-        const { data: userData } =
-          await supabase
-            .from('users')
-            .select('role')
-            .eq(
-              'id',
-              firebaseUser.uid
-            )
-            .single();
+      const [
+        productRes,
+        purchasesRes,
+        roleRes,
+      ] = await Promise.all([
+        supabase
+          .from('products')
+          .select('id,name')
+          .eq('id', productId)
+          .maybeSingle(),
 
-        if (
-          userData?.role ===
-          'admin'
-        ) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      }
-
-      const {
-        data,
-        error,
-      } = await supabase
-        .from('purchases')
-        .select('*')
-        .eq(
-          'product_id',
-          product.id
-        )
-        .order(
-          'purchase_date',
-          {
+        supabase
+          .from('purchases')
+          .select('*')
+          .eq('product_id', productId)
+          .order('purchase_date', {
             ascending: false,
-          }
-        );
+          }),
 
-      if (!error) {
-        setPurchases(
-          data || []
-        );
+        firebaseUser
+          ? supabase
+              .from('users')
+              .select('role')
+              .eq('id', firebaseUser.uid)
+              .maybeSingle()
+          : Promise.resolve({
+              data: null,
+              error: null,
+            }),
+      ]);
+
+      if (id !== requestId.current) {
+        return;
       }
-    };
+
+      setLoading(false);
+      setRefreshing(false);
+
+      // role failure: stay view-only, but tell the user
+      setRoleError(!!roleRes.error);
+      setIsAdmin(
+        !roleRes.error &&
+          roleRes.data?.role === 'admin'
+      );
+
+      const failure =
+        productRes.error ||
+        purchasesRes.error;
+
+      if (failure) {
+        setError(
+          failure.message ||
+            'Could not load product'
+        );
+        return;
+      }
+
+      setError(null);
+      setProduct(productRes.data);
+      setPurchases(
+        purchasesRes.data || []
+      );
+    },
+    [productId]
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (productId) {
+        fetchData();
+      }
+    }, [productId, fetchData])
+  );
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    fetchData();
+  };
 
   // SAFETY
   if (!product) {
@@ -132,118 +186,153 @@ export default function ProductDetailScreen({
     );
   }
 
+  const renderHeader = () => (
+    <View>
+      {/* PRODUCT CARD */}
+      <View
+        style={styles.productCard}
+      >
+        <Text
+          style={styles.productName}
+        >
+          {product.name}
+        </Text>
+
+        <Text
+          style={styles.roleText}
+        >
+          {isAdmin
+            ? 'Admin Access'
+            : 'View Only'}
+        </Text>
+
+        {roleError && (
+          <Text
+            style={styles.warningText}
+          >
+            Could not check your
+            access. Showing view only.
+          </Text>
+        )}
+      </View>
+
+      {/* TITLE */}
+      <Text
+        style={styles.sectionTitle}
+      >
+        Purchases
+      </Text>
+    </View>
+  );
+
+  const renderEmpty = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyBox}>
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+          />
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.emptyBox}>
+          <MaterialIcons
+            name="error-outline"
+            size={70}
+            color={COLORS.danger}
+          />
+
+          <Text
+            style={styles.emptyText}
+          >
+            Could not load purchases
+          </Text>
+
+          <Text
+            style={styles.errorDetail}
+          >
+            {error}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={handleRetry}
+          >
+            <Text
+              style={styles.retryText}
+            >
+              Retry
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyBox}>
+        <MaterialIcons
+          name="inventory"
+          size={70}
+          color={COLORS.subText}
+        />
+
+        <Text style={styles.emptyText}>
+          No Purchases Yet
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView
       style={styles.safe}
     >
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: 120,
-        }}
+      <FlatList
+        data={purchases}
+        keyExtractor={(item) =>
+          item.id.toString()
+        }
+        contentContainerStyle={[
+          styles.container,
+          { paddingBottom: 120 },
+        ]}
         showsVerticalScrollIndicator={
           false
         }
-      >
-        <View
-          style={
-            styles.container
-          }
-        >
-          {/* PRODUCT CARD */}
-          <View
-            style={
-              styles.productCard
-            }
-          >
-            <Text
-              style={
-                styles.productName
-              }
-            >
-              {product.name}
-            </Text>
-
-            <Text
-              style={
-                styles.roleText
-              }
-            >
-              {isAdmin
-                ? 'Admin Access'
-                : 'View Only'}
-            </Text>
-          </View>
-
-          {/* TITLE */}
-          <Text
-            style={
-              styles.sectionTitle
-            }
-          >
-            Purchases
-          </Text>
-
-          {/* EMPTY */}
-          {purchases.length ===
-          0 ? (
-            <View
-              style={
-                styles.emptyBox
-              }
-            >
-              <MaterialIcons
-                name="inventory"
-                size={70}
-                color={
-                  COLORS.subText
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={COLORS.primary}
+            colors={[COLORS.primary]}
+          />
+        }
+        ListHeaderComponent={
+          renderHeader()
+        }
+        ListEmptyComponent={
+          renderEmpty()
+        }
+        renderItem={({ item }) => (
+          <PurchaseCard
+            item={item}
+            isAdmin={isAdmin}
+            onEdit={() =>
+              navigation.push(
+                'EditPurchase',
+                {
+                  purchase: item,
+                  isAdmin: isAdmin,
                 }
-              />
-
-              <Text
-                style={
-                  styles.emptyText
-                }
-              >
-                No Purchases Yet
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={purchases}
-              keyExtractor={(
-                item
-              ) =>
-                item.id.toString()
-              }
-              scrollEnabled={
-                false
-              }
-              renderItem={({
-                item,
-              }) => (
-                <PurchaseCard
-                  item={item}
-                  isAdmin={
-                    isAdmin
-                  }
-                  onEdit={() =>
-                    navigation.push(
-                      'EditPurchase',
-                      {
-                        purchase:
-                          item,
-
-                        isAdmin:
-                          isAdmin,
-                      }
-                    )
-                  }
-                />
-              )}
-            />
-          )}
-        </View>
-      </ScrollView>
+              )
+            }
+          />
+        )}
+      />
 
       {/* ADD PURCHASE */}
       <TouchableOpacity
@@ -339,6 +428,34 @@ const styles =
       fontSize: 18,
       fontWeight: '600',
       color: COLORS.subText,
+    },
+
+    warningText: {
+      marginTop: 8,
+      color: COLORS.danger,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+
+    errorDetail: {
+      marginTop: 8,
+      fontSize: 14,
+      color: COLORS.subText,
+      textAlign: 'center',
+    },
+
+    retryButton: {
+      marginTop: 20,
+      backgroundColor: COLORS.primary,
+      borderRadius: RADIUS.md,
+      paddingHorizontal: 28,
+      paddingVertical: 12,
+    },
+
+    retryText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '700',
     },
 
     fab: {

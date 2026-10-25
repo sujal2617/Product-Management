@@ -1,5 +1,6 @@
 import React, {
   useState,
+  useRef,
 } from 'react';
 
 import {
@@ -10,6 +11,9 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -23,6 +27,8 @@ import {
 } from '@expo/vector-icons';
 
 import { supabase } from '../lib/supabase';
+
+import { parsePrice } from '../utils/validation';
 
 import {
   COLORS,
@@ -69,74 +75,86 @@ export default function AddPurchaseScreen({
     setShowPicker,
   ] = useState(false);
 
-  const handleSave =
-    async () => {
-      if (
-        !sellerName ||
-        !quantity ||
-        !purchasePrice ||
-        !finalPrice
-      ) {
-        Alert.alert(
-          'Missing Fields',
-          'Please fill all required fields'
-        );
+  const [saving, setSaving] =
+    useState(false);
 
+  const inFlight = useRef(false);
+  
+    const runGuarded = async (task) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      setSaving(true);
+      try {
+        await task();
+      } finally {
+        inFlight.current = false;
+        setSaving(false);
+      }
+    };
+  
+const handleSave = () =>
+    runGuarded(async () => {
+      if (!sellerName.trim()) {
+        Alert.alert('Missing Field', 'Please enter the purchaser name');
         return;
       }
+
+      if (!quantity.trim()) {
+        Alert.alert('Missing Field', 'Please enter the quantity');
+        return;
+      }
+
+      const purchaseValue = parsePrice(purchasePrice);
+      if (purchaseValue === null) {
+        Alert.alert('Invalid Purchase Price', 'Enter the purchase price as a number, 0 or more');
+        return;
+      }
+
+      const finalValue = parsePrice(finalPrice);
+      if (finalValue === null) {
+        Alert.alert('Invalid Final Price', 'Enter the final price (after transport) as a number, 0 or more');
+        return;
+      }
+
+      setSaving(true);
 
       const { error } =
         await supabase
           .from('purchases')
           .insert({
-            product_id:
-              productId,
-
-            purchaser_name:
-              sellerName,
-
-            quantity,
-
-            purchase_price:
-              parseFloat(
-                purchasePrice
-              ),
-
-            final_price:
-              parseFloat(
-                finalPrice
-              ),
-
+            product_id: productId,
+            purchaser_name: sellerName.trim(),
+            quantity: quantity.trim(),
+            purchase_price: purchaseValue,
+            final_price: finalValue,
             notes,
-
-            purchase_date:
-              date.toISOString(),
+            purchase_date: date.toISOString(),
           });
 
+      setSaving(false);
+
       if (error) {
-        console.log(error);
+        if (__DEV__) console.warn(error);
 
-        Alert.alert(
-          'Error',
-          'Failed to save purchase'
-        );
-
+        Alert.alert('Error', 'Failed to save purchase');
         return;
       }
 
-      Alert.alert(
-        'Success',
-        'Purchase Added'
-      );
-
-      navigation.goBack();
-    };
+      Alert.alert('Success', 'Purchase Added', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    });
 
   return (
     <SafeAreaView
       style={styles.safe}
     >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={
           styles.scroll
         }
@@ -194,7 +212,7 @@ export default function AddPurchaseScreen({
             onChangeText={
               setPurchasePrice
             }
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             selectionColor={
               COLORS.primary
             }
@@ -211,7 +229,7 @@ export default function AddPurchaseScreen({
             onChangeText={
               setFinalPrice
             }
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             selectionColor={
               COLORS.primary
             }
@@ -267,36 +285,56 @@ export default function AddPurchaseScreen({
           </TouchableOpacity>
 
             {showPicker && (
+              Platform.OS === 'ios' ? (
                 <View style={styles.pickerContainer}>
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="spinner"
-                        onValueChange={(event, selectedDate) => {
-                            if (selectedDate) {
-                                setDate(selectedDate);
-                            }
-                        }}
-                    />
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="spinner"
+                    onValueChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setDate(selectedDate);
+                      }
+                    }}
+                  />
 
-                    <TouchableOpacity
-                        style={styles.doneButton}
-                        onPress={() => setShowPicker(false)}
-                    >
-                        <Text style={styles.doneText}>
-                            Done
-                        </Text>
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.doneButton}
+                    onPress={() => setShowPicker(false)}
+                  >
+                    <Text style={styles.doneText}>
+                      Done
+                    </Text>
+                  </TouchableOpacity>
                 </View>
+              ) : (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onValueChange={(event, selectedDate) => {
+                    setShowPicker(false);
+                    if (selectedDate) {
+                      setDate(selectedDate);
+                    }
+                  }}
+                  onDismiss={() => setShowPicker(false)}
+                />
+              )
             )}
 
           {/* SAVE */}
           <TouchableOpacity
-            style={
-              styles.button
-            }
+            style={[
+              styles.button,
+              saving && styles.disabled,
+            ]}
             onPress={handleSave}
+            disabled={saving}
           >
+            {saving ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
             <Text
               style={
                 styles.buttonText
@@ -304,15 +342,21 @@ export default function AddPurchaseScreen({
             >
               Save Purchase
             </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles =
   StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
+
     safe: {
       flex: 1,
 
@@ -389,6 +433,10 @@ const styles =
       fontWeight: '600',
 
       color: COLORS.text,
+    },
+
+    disabled: {
+      opacity: 0.6,
     },
 
     button: {

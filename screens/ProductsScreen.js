@@ -1,6 +1,8 @@
 import React, {
   useState,
   useCallback,
+  useEffect,
+  useRef,
 } from 'react';
 
 import {
@@ -10,6 +12,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 
 import {
@@ -35,6 +39,13 @@ import {
   RADIUS,
 } from '../theme';
 
+const PAGE_SIZE = 50;
+const SEARCH_DELAY_MS = 300;
+
+// escape LIKE wildcards so user text is matched literally
+const escapeLike = (text) =>
+  text.replace(/[\\%_]/g, '\\$&');
+
 export default function ProductsScreen({
   navigation,
 }) {
@@ -44,64 +55,218 @@ export default function ProductsScreen({
   const [search, setSearch] =
     useState('');
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchProducts();
-    }, [])
+  const [query, setQuery] =
+    useState('');
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [refreshing, setRefreshing] =
+    useState(false);
+
+  const [loadingMore, setLoadingMore] =
+    useState(false);
+
+  const [hasMore, setHasMore] =
+    useState(false);
+
+  const [error, setError] =
+    useState(null);
+
+  const requestId = useRef(0);
+  const failedOffset = useRef(0);
+
+  // debounce typing into the server query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const term = search.trim();
+
+      if (term !== query) {
+        setProducts([]);
+        setHasMore(false);
+        setError(null);
+        setLoading(true);
+        setQuery(term);
+      }
+    }, SEARCH_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [search, query]);
+
+  const fetchProducts = useCallback(
+    async (term, offset) => {
+      const id = ++requestId.current;
+
+      if (offset > 0) {
+        setLoadingMore(true);
+      }
+
+      let request = supabase
+        .from('products')
+        .select('id,name')
+        .order('name', {
+          ascending: true,
+        })
+        .order('id', {
+          ascending: true,
+        })
+        .range(
+          offset,
+          offset + PAGE_SIZE - 1
+        );
+
+      if (term) {
+        request = request.ilike(
+          'name',
+          escapeLike(term) + '%'
+        );
+      }
+
+      const { data, error: fetchError } =
+        await request;
+
+      // a newer request replaced this one
+      if (id !== requestId.current) {
+        return;
+      }
+
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+
+      if (fetchError) {
+        failedOffset.current = offset;
+        setError(
+          fetchError.message ||
+            'Could not load products'
+        );
+        return;
+      }
+
+      const rows = data || [];
+
+      setError(null);
+      setHasMore(
+        rows.length === PAGE_SIZE
+      );
+      setProducts((prev) =>
+        offset > 0
+          ? [...prev, ...rows]
+          : rows
+      );
+    },
+    []
   );
 
-    const fetchProducts = async () => {
-        const {
-            data,
-            error,
-        } = await supabase
-            .from('products')
-            .select('*')
-            .order('name', {
-                ascending: true,
-            })
-            .range(0, 5000);
+  // load on focus and when the search term changes
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts(query, 0);
+    }, [query, fetchProducts])
+  );
 
-        if (error) {
-            console.log(
-                'SUPABASE ERROR:',
-                error
-            );
-            return;
-        }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchProducts(query, 0);
+  };
 
-        console.log(
-            'TOTAL PRODUCTS:',
-            data?.length
-        );
+  const handleRetry = () => {
+    setError(null);
+    if (failedOffset.current > 0) {
+      fetchProducts(query, failedOffset.current);
+      return;
+    }
+    setLoading(true);
+    fetchProducts(query, 0);
+  };
 
-        console.log(
-            'FIRST PRODUCT:',
-            data?.[0]
-        );
+  const handleEndReached = () => {
+    if (
+      loading ||
+      refreshing ||
+      loadingMore ||
+      !hasMore ||
+      error
+    ) {
+      return;
+    }
 
-        console.log(
-            'LAST PRODUCT:',
-            data?.[data.length - 1]
-        );
+    fetchProducts(
+      query,
+      products.length
+    );
+  };
 
-        setProducts(data || []);
-    };
+  const renderEmpty = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyBox}>
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+          />
+        </View>
+      );
+    }
 
-  // PARTIAL SEARCH FILTER
-  const filteredProducts =
-    search.trim() === ''
-      ? products
-      : products.filter(
-          (item) =>
-            item.name
-              ?.toLowerCase()
-              .includes(
-                search
-                  .trim()
-                  .toLowerCase()
-              )
-        );
+    if (error) {
+      return (
+        <View style={styles.emptyBox}>
+          <MaterialIcons
+            name="error-outline"
+            size={64}
+            color={COLORS.danger}
+          />
+
+          <Text style={styles.emptyText}>
+            Could not load products
+          </Text>
+
+          <Text style={styles.errorDetail}>
+            {error}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={handleRetry}
+          >
+            <Text
+              style={styles.retryText}
+            >
+              Retry
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyBox}>
+        <MaterialIcons
+          name="inventory-2"
+          size={64}
+          color={COLORS.subText}
+        />
+
+        <Text style={styles.emptyText}>
+          No Products Found
+        </Text>
+      </View>
+    );
+  };
+
+  // error while a list is already on screen
+  const renderHeader = () =>
+    error && products.length > 0 ? (
+      <TouchableOpacity
+        style={styles.errorBanner}
+        onPress={handleRetry}
+      >
+        <Text style={styles.errorBannerText}>
+          Could not load products. Tap to retry.
+        </Text>
+      </TouchableOpacity>
+    ) : null;
 
   return (
     <SafeAreaView
@@ -194,56 +359,53 @@ export default function ProductsScreen({
 
         {/* PRODUCTS */}
         <FlatList
-          data={filteredProducts}
-          keyExtractor={(
-            item
-          ) =>
+          data={products}
+          keyExtractor={(item) =>
             item.id.toString()
           }
           showsVerticalScrollIndicator={
             false
           }
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingBottom: 120,
           }}
-          renderItem={({
-            item,
-          }) => (
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={COLORS.primary}
+              colors={[COLORS.primary]}
+            />
+          }
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          renderItem={({ item }) => (
             <ProductCard
               product={item}
               onPress={() => {
-                navigation.push(
+                navigation.navigate(
                   'ProductDetail',
                   {
-                    product:
-                      item,
+                    product: item,
                   }
                 );
               }}
             />
           )}
-          ListEmptyComponent={
-            <View
-              style={
-                styles.emptyBox
-              }
-            >
-              <MaterialIcons
-                name="inventory-2"
-                size={64}
-                color={
-                  COLORS.subText
-                }
+          ListHeaderComponent={
+            renderHeader()
+          }
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                style={styles.footerSpinner}
+                color={COLORS.primary}
               />
-
-              <Text
-                style={
-                  styles.emptyText
-                }
-              >
-                No Products Found
-              </Text>
-            </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            renderEmpty()
           }
         />
 
@@ -365,6 +527,44 @@ const styles =
       fontSize: 18,
       color: COLORS.subText,
       fontWeight: '600',
+    },
+
+    errorDetail: {
+      marginTop: 8,
+      fontSize: 14,
+      color: COLORS.subText,
+      textAlign: 'center',
+    },
+
+    retryButton: {
+      marginTop: 20,
+      backgroundColor: COLORS.primary,
+      borderRadius: RADIUS.md,
+      paddingHorizontal: 28,
+      paddingVertical: 12,
+    },
+
+    retryText: {
+      color: COLORS.white,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+
+    errorBanner: {
+      backgroundColor: COLORS.white,
+      borderRadius: RADIUS.md,
+      padding: 14,
+      marginBottom: 16,
+      ...SHADOW,
+    },
+
+    errorBannerText: {
+      color: COLORS.danger,
+      fontWeight: '600',
+    },
+
+    footerSpinner: {
+      marginVertical: 20,
     },
 
     fab: {

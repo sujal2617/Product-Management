@@ -1,5 +1,6 @@
 import React, {
   useState,
+  useRef,
 } from 'react';
 
 import {
@@ -10,6 +11,9 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -23,6 +27,8 @@ import {
 } from '@expo/vector-icons';
 
 import { supabase } from '../lib/supabase';
+
+import { parsePrice } from '../utils/validation';
 
 import {
   COLORS,
@@ -45,7 +51,7 @@ export default function EditPurchaseScreen({
     setPurchaserName,
   ] = useState(
     purchase
-      ?.purchaser_name ||
+      ?.purchaser_name ??
       ''
   );
 
@@ -53,8 +59,10 @@ export default function EditPurchaseScreen({
     quantity,
     setQuantity,
   ] = useState(
-    purchase?.quantity ||
-      ''
+    String(
+      purchase?.quantity ??
+        ''
+    )
   );
 
   const [
@@ -62,7 +70,7 @@ export default function EditPurchaseScreen({
     setPurchasePrice,
   ] = useState(
     String(
-      purchase?.purchase_price ||
+      purchase?.purchase_price ??
         ''
     )
   );
@@ -72,78 +80,104 @@ export default function EditPurchaseScreen({
     setFinalPrice,
   ] = useState(
     String(
-      purchase?.final_price ||
+      purchase?.final_price ??
         ''
     )
   );
 
   const [notes, setNotes] =
     useState(
-      purchase?.notes || ''
+      purchase?.notes ?? ''
     );
 
   const [date, setDate] =
-    useState(
-      new Date(
+    useState(() => {
+      const parsed = new Date(
         purchase?.purchase_date
+      );
+
+      return Number.isNaN(
+        parsed.getTime()
       )
-    );
+        ? new Date()
+        : parsed;
+    });
 
   const [
     showPicker,
     setShowPicker,
   ] = useState(false);
 
+  const [saving, setSaving] =
+    useState(false);
+
   // SAVE
-  const handleSave =
-    async () => {
+  const inFlight = useRef(false);
+  
+    const runGuarded = async (task) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      setSaving(true);
+      try {
+        await task();
+      } finally {
+        inFlight.current = false;
+        setSaving(false);
+      }
+    };
+  
+const handleSave = () =>
+    runGuarded(async () => {
+      if (!purchaserName.trim()) {
+        Alert.alert('Missing Field', 'Please enter the purchaser name');
+        return;
+      }
+
+      if (!quantity.trim()) {
+        Alert.alert('Missing Field', 'Please enter the quantity');
+        return;
+      }
+
+      const purchaseValue = parsePrice(purchasePrice);
+      if (purchaseValue === null) {
+        Alert.alert('Invalid Purchase Price', 'Enter the purchase price as a number, 0 or more');
+        return;
+      }
+
+      const finalValue = parsePrice(finalPrice);
+      if (finalValue === null) {
+        Alert.alert('Invalid Final Price', 'Enter the final price (after transport) as a number, 0 or more');
+        return;
+      }
+
+      setSaving(true);
+
       const { error } =
         await supabase
           .from('purchases')
           .update({
-            purchaser_name:
-              purchaserName,
-
-            quantity,
-
-            purchase_price:
-              parseFloat(
-                purchasePrice
-              ),
-
-            final_price:
-              parseFloat(
-                finalPrice
-              ),
-
+            purchaser_name: purchaserName.trim(),
+            quantity: quantity.trim(),
+            purchase_price: purchaseValue,
+            final_price: finalValue,
             notes,
-
-            purchase_date:
-              date.toISOString(),
+            purchase_date: date.toISOString(),
           })
-          .eq(
-            'id',
-            purchase.id
-          );
+          .eq('id', purchase.id);
+
+      setSaving(false);
 
       if (error) {
-        console.log(error);
+        if (__DEV__) console.warn(error);
 
-        Alert.alert(
-          'Error',
-          'Failed to update purchase'
-        );
-
+        Alert.alert('Error', 'Failed to update purchase');
         return;
       }
 
-      Alert.alert(
-        'Success',
-        'Purchase Updated'
-      );
-
-      navigation.goBack();
-    };
+      Alert.alert('Success', 'Purchase Updated', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    });
 
   // DELETE
   const handleDelete =
@@ -164,8 +198,9 @@ export default function EditPurchaseScreen({
             style:
               'destructive',
 
-            onPress:
-              async () => {
+            onPress: () =>
+              runGuarded(async () => {
+
                 const {
                   error,
                 } =
@@ -179,6 +214,8 @@ export default function EditPurchaseScreen({
                       purchase.id
                     );
 
+                setSaving(false);
+
                 if (error) {
                   Alert.alert(
                     'Error',
@@ -190,11 +227,16 @@ export default function EditPurchaseScreen({
 
                 Alert.alert(
                   'Deleted',
-                  'Purchase deleted successfully'
+                  'Purchase deleted successfully',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () =>
+                        navigation.goBack(),
+                    },
+                  ]
                 );
-
-                navigation.goBack();
-              },
+              }),
           },
         ]
       );
@@ -204,7 +246,12 @@ export default function EditPurchaseScreen({
     <SafeAreaView
       style={styles.safe}
     >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={
           styles.scroll
         }
@@ -266,7 +313,7 @@ export default function EditPurchaseScreen({
             onChangeText={
               setPurchasePrice
             }
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             selectionColor={
               COLORS.primary
             }
@@ -283,7 +330,7 @@ export default function EditPurchaseScreen({
             onChangeText={
               setFinalPrice
             }
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             selectionColor={
               COLORS.primary
             }
@@ -341,38 +388,58 @@ export default function EditPurchaseScreen({
           </TouchableOpacity>
 
             {showPicker && (
+              Platform.OS === 'ios' ? (
                 <View style={styles.pickerContainer}>
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="spinner"
-                        onValueChange={(event, selectedDate) => {
-                            if (selectedDate) {
-                                setDate(selectedDate);
-                            }
-                        }}
-                    />
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="spinner"
+                    onValueChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setDate(selectedDate);
+                      }
+                    }}
+                  />
 
-                    <TouchableOpacity
-                        style={styles.doneButton}
-                        onPress={() => setShowPicker(false)}
-                    >
-                        <Text style={styles.doneText}>
-                            Done
-                        </Text>
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.doneButton}
+                    onPress={() => setShowPicker(false)}
+                  >
+                    <Text style={styles.doneText}>
+                      Done
+                    </Text>
+                  </TouchableOpacity>
                 </View>
+              ) : (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onValueChange={(event, selectedDate) => {
+                    setShowPicker(false);
+                    if (selectedDate) {
+                      setDate(selectedDate);
+                    }
+                  }}
+                  onDismiss={() => setShowPicker(false)}
+                />
+              )
             )}
 
           {/* SAVE */}
           <TouchableOpacity
-            style={
-              styles.button
-            }
+            style={[
+              styles.button,
+              saving && styles.disabled,
+            ]}
             onPress={
               handleSave
             }
+            disabled={saving}
           >
+            {saving ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
             <Text
               style={
                 styles.buttonText
@@ -380,17 +447,20 @@ export default function EditPurchaseScreen({
             >
               Save Purchase
             </Text>
+            )}
           </TouchableOpacity>
 
           {/* DELETE */}
           {isAdmin && (
             <TouchableOpacity
-              style={
-                styles.deleteButton
-              }
+              style={[
+                styles.deleteButton,
+                saving && styles.disabled,
+              ]}
               onPress={
                 handleDelete
               }
+              disabled={saving}
             >
               <MaterialIcons
                 name="delete"
@@ -409,12 +479,17 @@ export default function EditPurchaseScreen({
           )}
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles =
   StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
+
     safe: {
       flex: 1,
 
@@ -493,6 +568,10 @@ const styles =
       fontWeight: '600',
 
       color: COLORS.text,
+    },
+
+    disabled: {
+      opacity: 0.6,
     },
 
     button: {

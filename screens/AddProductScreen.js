@@ -1,5 +1,6 @@
 import React, {
   useState,
+  useRef,
 } from 'react';
 
 import {
@@ -10,6 +11,9 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -17,6 +21,8 @@ import {
 } from 'react-native-safe-area-context';
 
 import { supabase } from '../lib/supabase';
+
+import { escapeLike } from '../utils/validation';
 
 import {
   COLORS,
@@ -31,9 +37,28 @@ export default function AddProductScreen({
   const [name, setName] =
     useState('');
 
-  const handleSave =
-    async () => {
-      if (!name) {
+  const [saving, setSaving] =
+    useState(false);
+
+  const inFlight = useRef(false);
+  
+    const runGuarded = async (task) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      setSaving(true);
+      try {
+        await task();
+      } finally {
+        inFlight.current = false;
+        setSaving(false);
+      }
+    };
+  
+const handleSave = () =>
+    runGuarded(async () => {
+      const trimmed = name.trim();
+
+      if (!trimmed) {
         Alert.alert(
           'Missing Fields',
           'Please enter product name'
@@ -42,18 +67,34 @@ export default function AddProductScreen({
         return;
       }
 
+      setSaving(true);
+
       const {
         data: existing,
+        error: checkError,
       } = await supabase
         .from('products')
-        .select('*')
+        .select('id')
         .ilike(
           'name',
-          name.trim()
+          escapeLike(trimmed)
         )
-        .maybeSingle();
+        .limit(1);
 
-      if (existing) {
+      if (checkError) {
+        setSaving(false);
+
+        Alert.alert(
+          'Error',
+          'Could not check existing products'
+        );
+
+        return;
+      }
+
+      if (existing?.length) {
+        setSaving(false);
+
         Alert.alert(
           'Duplicate Product',
           'Product already exists'
@@ -66,9 +107,10 @@ export default function AddProductScreen({
         await supabase
           .from('products')
           .insert({
-            name:
-              name.trim(),
+            name: trimmed,
           });
+
+      setSaving(false);
 
       if (error) {
         Alert.alert(
@@ -81,17 +123,27 @@ export default function AddProductScreen({
 
       Alert.alert(
         'Success',
-        'Product Added'
+        'Product Added',
+        [
+          {
+            text: 'OK',
+            onPress: () =>
+              navigation.goBack(),
+          },
+        ]
       );
-
-      navigation.goBack();
-    };
+    });
 
   return (
     <SafeAreaView
       style={styles.safe}
     >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={
           styles.scroll
         }
@@ -122,9 +174,16 @@ export default function AddProductScreen({
           />
 
           <TouchableOpacity
-            style={styles.button}
+            style={[
+              styles.button,
+              saving && styles.disabled,
+            ]}
             onPress={handleSave}
+            disabled={saving}
           >
+            {saving ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
             <Text
               style={
                 styles.buttonText
@@ -132,15 +191,25 @@ export default function AddProductScreen({
             >
               Save Product
             </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles =
   StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
+
+    disabled: {
+      opacity: 0.6,
+    },
+
     safe: {
       flex: 1,
 
