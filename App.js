@@ -32,6 +32,8 @@ import {
 
 import { auth } from './lib/firebase';
 
+import { supabase } from './lib/supabase';
+
 import LoginScreen from './screens/LoginScreen';
 
 import RegisterScreen from './screens/RegisterScreen';
@@ -88,6 +90,9 @@ export default function App() {
   const [loading, setLoading] =
     useState(true);
 
+  const [isAdmin, setIsAdmin] =
+    useState(false);
+
   useEffect(() => {
     const unsubscribe =
       onAuthStateChanged(
@@ -101,6 +106,36 @@ export default function App() {
 
     return unsubscribe;
   }, []);
+
+  // Fetch role once per login; any error means not admin (UI only, RLS enforces).
+  useEffect(() => {
+    let cancelled = false;
+
+    setIsAdmin(false);
+
+    if (!user) return undefined;
+
+    supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.uid)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!cancelled) {
+          setIsAdmin(
+            !error &&
+              data?.role === 'admin'
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // LOADING SCREEN
   if (loading) {
@@ -300,16 +335,18 @@ export default function App() {
               />
 
               {/* ADMIN */}
-              <Stack.Screen
-                name="Admin"
-                component={
-                  AdminScreen
-                }
-                options={{
-                  title:
-                    'Admin Dashboard',
-                }}
-              />
+              {isAdmin && (
+                <Stack.Screen
+                  name="Admin"
+                  component={
+                    AdminScreen
+                  }
+                  options={{
+                    title:
+                      'Admin Dashboard',
+                  }}
+                />
+              )}
             </>
           )}
         </Stack.Navigator>

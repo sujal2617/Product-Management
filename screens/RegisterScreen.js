@@ -124,7 +124,7 @@ export default function RegisterScreen({
         ) {
           Alert.alert(
             'Email Exists',
-            'Email already registered'
+            'This email already has an account. Go back and log in, or ask the admin to reset your password. If you can log in but see no profile, ask the admin to approve you.'
           );
         } else {
           Alert.alert(

@@ -52,6 +52,23 @@ function toCsv(rows) {
   return [columns.join(','), ...lines].join('\n') + '\n';
 }
 
+const KEEP_DAYS = 3;
+const STAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})$/;
+
+// Deletes backup/<timestamp> folders older than KEEP_DAYS. Never touches keepName or other names.
+function pruneOldBackups(keepName) {
+  const dir = path.join(ROOT, 'backup');
+  const cutoff = Date.now() - KEEP_DAYS * 24 * 60 * 60 * 1000;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const m = entry.isDirectory() && entry.name !== keepName && STAMP_PATTERN.exec(entry.name);
+    if (!m) continue;
+    const time = Date.UTC(m[1], m[2] - 1, m[3], m[4], m[5], m[6]);
+    if (time >= cutoff) continue;
+    fs.rmSync(path.join(dir, entry.name), { recursive: true });
+    console.log(`Deleted old backup ${entry.name}`);
+  }
+}
+
 async function main() {
   const config = loadConfig();
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
@@ -74,7 +91,11 @@ async function main() {
     }
   }
   console.log(`\nSaved to ${outDir}`);
-  if (failed) process.exitCode = 1;
+  if (failed) {
+    process.exitCode = 1;
+    return;
+  }
+  pruneOldBackups(stamp);
 }
 
 main().catch((err) => {
