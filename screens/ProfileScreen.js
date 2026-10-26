@@ -318,7 +318,7 @@ export default function ProfileScreen({
               styles.adminButton
             }
             onPress={() =>
-              navigation.push(
+              navigation.navigate(
                 'Admin'
               )
             }

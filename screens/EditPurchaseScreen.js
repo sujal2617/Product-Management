@@ -176,7 +176,7 @@ const handleSave = () =>
 
       Alert.alert('Success', 'Purchase Updated', [
         { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      ], { cancelable: false });
     });
 
   // DELETE
@@ -234,7 +234,8 @@ const handleSave = () =>
                       onPress: () =>
                         navigation.goBack(),
                     },
-                  ]
+                  ],
+                  { cancelable: false }
                 );
               }),
           },

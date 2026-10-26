@@ -133,7 +133,8 @@ const handleSave = () =>
             onPress: () =>
               navigation.goBack(),
           },
-        ]
+        ],
+        { cancelable: false }
       );
     });
 

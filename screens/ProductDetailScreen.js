@@ -322,7 +322,7 @@ export default function ProductDetailScreen({
             item={item}
             isAdmin={isAdmin}
             onEdit={() =>
-              navigation.push(
+              navigation.navigate(
                 'EditPurchase',
                 {
                   purchase: item,
@@ -338,7 +338,7 @@ export default function ProductDetailScreen({
       <TouchableOpacity
         style={styles.fab}
         onPress={() =>
-          navigation.push(
+          navigation.navigate(
             'AddPurchase',
             {
               productId:

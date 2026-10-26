@@ -145,7 +145,7 @@ const handleSave = () =>
 
       Alert.alert('Success', 'Purchase Added', [
         { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      ], { cancelable: false });
     });
 
   return (

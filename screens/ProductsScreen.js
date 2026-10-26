@@ -297,7 +297,7 @@ export default function ProductsScreen({
               styles.profileButton
             }
             onPress={() =>
-              navigation.push(
+              navigation.navigate(
                 'Profile'
               )
             }
@@ -413,7 +413,7 @@ export default function ProductsScreen({
         <TouchableOpacity
           style={styles.fab}
           onPress={() =>
-            navigation.push(
+            navigation.navigate(
               'AddProduct'
             )
           }
