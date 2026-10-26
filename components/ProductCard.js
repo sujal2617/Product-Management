@@ -12,7 +12,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   RADIUS,
   SPACING,
@@ -22,6 +22,13 @@ export default function ProductCard({
   product,
   onPress,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   return (
     <TouchableOpacity
       style={styles.card}
@@ -42,7 +49,7 @@ export default function ProductCard({
           <MaterialIcons
             name="inventory-2"
             size={28}
-            color={COLORS.white}
+            color={COLORS.onPrimary}
           />
         </View>
 
@@ -74,7 +81,7 @@ export default function ProductCard({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     card: {
       backgroundColor:

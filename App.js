@@ -16,6 +16,7 @@ import {
 import {
   NavigationContainer,
   DarkTheme,
+  DefaultTheme,
 } from '@react-navigation/native';
 
 import {
@@ -56,34 +57,36 @@ import AdminScreen from './screens/AdminScreen';
 
 import NotesScreen from './screens/NotesScreen';
 
-import { COLORS } from './theme';
+import { useTheme, DARK_COLORS } from './theme';
 
 const Stack =
   createNativeStackNavigator();
 
-// CUSTOM DARK NAVIGATION THEME
-const CustomDarkTheme = {
-  ...DarkTheme,
-
-  colors: {
-    ...DarkTheme.colors,
-
-    background:
-      COLORS.background,
-
-    card: COLORS.white,
-
-    text: COLORS.text,
-
-    border:
-      COLORS.border,
-
-    primary:
-      COLORS.primary,
-  },
-};
-
 export default function App() {
+  const COLORS = useTheme();
+
+  const isDark = COLORS === DARK_COLORS;
+
+  const navTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+
+    colors: {
+      ...(isDark
+        ? DarkTheme.colors
+        : DefaultTheme.colors),
+
+      background: COLORS.background,
+
+      card: COLORS.white,
+
+      text: COLORS.text,
+
+      border: COLORS.border,
+
+      primary: COLORS.primary,
+    },
+  };
+
   const [user, setUser] =
     useState(null);
 
@@ -167,8 +170,11 @@ export default function App() {
       {/* STATUS BAR */}
       <StatusBar
         translucent={false}
-//        barStyle="light-content"
-        barStyle="dark-content"
+        barStyle={
+          isDark
+            ? 'light-content'
+            : 'dark-content'
+        }
         backgroundColor={
           COLORS.background
         }
@@ -176,9 +182,7 @@ export default function App() {
 
       {/* NAVIGATION */}
       <NavigationContainer
-        theme={
-          CustomDarkTheme
-        }
+        theme={navTheme}
       >
         <Stack.Navigator
           screenOptions={{

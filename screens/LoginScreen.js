@@ -32,7 +32,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   RADIUS,
   SPACING,
@@ -60,6 +60,13 @@ function friendlyMessage(code) {
 export default function LoginScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [email, setEmail] =
     useState('');
 
@@ -195,7 +202,7 @@ export default function LoginScreen({
               <MaterialIcons
                 name="inventory-2"
                 size={60}
-                color={COLORS.white}
+                color={COLORS.onPrimary}
               />
             </View>
 
@@ -256,6 +263,9 @@ export default function LoginScreen({
               />
 
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 onPress={() =>
                   setShowPassword(
                     !showPassword
@@ -288,7 +298,7 @@ export default function LoginScreen({
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color={COLORS.white} />
+                <ActivityIndicator color={COLORS.onPrimary} />
               ) : (
               <Text
                 style={
@@ -324,7 +334,7 @@ export default function LoginScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -444,7 +454,7 @@ const styles =
     },
 
     buttonText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
       fontSize: 17,
       fontWeight: '700',
     },

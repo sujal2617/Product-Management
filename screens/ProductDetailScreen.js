@@ -33,7 +33,7 @@ import {
 import PurchaseCard from '../components/PurchaseCard';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
@@ -43,6 +43,13 @@ export default function ProductDetailScreen({
   route,
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const routeProduct =
     route?.params?.product;
 
@@ -322,7 +329,7 @@ export default function ProductDetailScreen({
             item={item}
             isAdmin={isAdmin}
             onEdit={() =>
-              navigation.push(
+              navigation.navigate(
                 'EditPurchase',
                 {
                   purchase: item,
@@ -336,9 +343,11 @@ export default function ProductDetailScreen({
 
       {/* ADD PURCHASE */}
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Add purchase"
         style={styles.fab}
         onPress={() =>
-          navigation.push(
+          navigation.navigate(
             'AddPurchase',
             {
               productId:
@@ -350,14 +359,14 @@ export default function ProductDetailScreen({
         <MaterialIcons
           name="add"
           size={34}
-          color={COLORS.white}
+          color={COLORS.onPrimary}
         />
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -453,7 +462,7 @@ const styles =
     },
 
     retryText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
       fontSize: 16,
       fontWeight: '700',
     },

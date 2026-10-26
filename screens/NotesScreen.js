@@ -11,13 +11,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import {
-    COLORS,
+    useTheme,
     SPACING,
     RADIUS,
     SHADOW,
 } from '../theme';
 
 export default function NotesScreen() {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
     const [note, setNote] =
         useState('');
 
@@ -144,7 +151,7 @@ const handleSave = () =>
                     disabled={saving}
                 >
                     {saving ? (
-                        <ActivityIndicator color={COLORS.white} />
+                        <ActivityIndicator color={COLORS.onPrimary} />
                     ) : (
                     <Text
                         style={
@@ -172,7 +179,7 @@ const handleSave = () =>
     );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
     StyleSheet.create({
         safe: {
             flex: 1,
@@ -196,7 +203,7 @@ const styles =
         },
 
         saveButtonText: {
-            color: '#fff',
+            color: COLORS.onPrimary,
             fontSize: 16,
             fontWeight: '700',
         },

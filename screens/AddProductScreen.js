@@ -27,7 +27,7 @@ import { auth } from '../lib/firebase';
 import { escapeLike } from '../utils/validation';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
@@ -36,6 +36,13 @@ import {
 export default function AddProductScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [name, setName] =
     useState('');
 
@@ -133,7 +140,8 @@ const handleSave = () =>
             onPress: () =>
               navigation.goBack(),
           },
-        ]
+        ],
+        { cancelable: false }
       );
     });
 
@@ -185,7 +193,7 @@ const handleSave = () =>
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color={COLORS.white} />
+              <ActivityIndicator color={COLORS.onPrimary} />
             ) : (
             <Text
               style={
@@ -203,7 +211,7 @@ const handleSave = () =>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -277,7 +285,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#eef7ff',
+      color: COLORS.onPrimarySoft,
 
       fontWeight: '700',
 

@@ -24,7 +24,7 @@ import { supabase } from '../lib/supabase';
 import { escapeLike } from '../utils/validation';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
@@ -34,6 +34,13 @@ export default function EditProductScreen({
   route,
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const { product } =
     route.params;
 
@@ -140,7 +147,8 @@ const handleSave = () =>
             onPress: () =>
               navigation.goBack(),
           },
-        ]
+        ],
+        { cancelable: false }
       );
     });
 
@@ -182,7 +190,7 @@ const handleSave = () =>
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={COLORS.onPrimary} />
           ) : (
           <Text
             style={
@@ -199,7 +207,7 @@ const handleSave = () =>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -267,7 +275,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#eef7ff',
+      color: COLORS.onPrimarySoft,
 
       fontWeight: '700',
 
