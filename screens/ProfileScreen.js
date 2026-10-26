@@ -40,10 +40,14 @@ import {
   SPACING,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function ProfileScreen({
   navigation,
 }) {
   const COLORS = useTheme();
+
+  const toast = useToast();
 
   const styles = React.useMemo(
     () => makeStyles(COLORS),
@@ -111,23 +115,41 @@ export default function ProfileScreen({
       } catch (error) {
         if (__DEV__) console.warn(error);
 
+        toast.show("Couldn't load profile. Check internet.", 'error');
+
         setLoading(false);
       }
     };
 
-  const handleLogout =
+  const performLogout =
     async () => {
       try {
         await signOut(auth);
+
+        toast.show('Logged out', 'info');
       } catch (error) {
         if (__DEV__) console.warn(error);
 
         Alert.alert(
           'Error',
-          'Logout failed'
+          'Logout failed. Try again.'
         );
       }
     };
+
+  const handleLogout = () =>
+    Alert.alert(
+      'Log out',
+      'Do you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log out',
+          style: 'destructive',
+          onPress: performLogout,
+        },
+      ]
+    );
 
   // LOADING
   if (loading) {

@@ -37,11 +37,15 @@ import {
   RADIUS,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function EditPurchaseScreen({
   route,
   navigation,
 }) {
   const COLORS = useTheme();
+
+  const toast = useToast();
 
   const styles = React.useMemo(
     () => makeStyles(COLORS),
@@ -127,6 +131,9 @@ export default function EditPurchaseScreen({
       setSaving(true);
       try {
         await task();
+      } catch (e) {
+        if (__DEV__) console.warn(e);
+        toast.show("Couldn't save. Check internet and try again.", 'error');
       } finally {
         inFlight.current = false;
         setSaving(false);
@@ -177,13 +184,12 @@ const handleSave = () =>
       if (error) {
         if (__DEV__) console.warn(error);
 
-        Alert.alert('Error', 'Failed to update purchase');
+        toast.show("Couldn't save. Check internet and try again.", 'error');
         return;
       }
 
-      Alert.alert('Success', 'Purchase Updated', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ], { cancelable: false });
+      navigation.goBack();
+      toast.show('Purchase updated');
     });
 
   // DELETE
@@ -224,26 +230,13 @@ const handleSave = () =>
                 setSaving(false);
 
                 if (error) {
-                  Alert.alert(
-                    'Error',
-                    'Failed to delete purchase'
-                  );
+                  toast.show("Couldn't delete. Check internet and try again.", 'error');
 
                   return;
                 }
 
-                Alert.alert(
-                  'Deleted',
-                  'Purchase deleted successfully',
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () =>
-                        navigation.goBack(),
-                    },
-                  ],
-                  { cancelable: false }
-                );
+                navigation.goBack();
+                toast.show('Purchase deleted');
               }),
           },
         ]

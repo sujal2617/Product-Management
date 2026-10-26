@@ -39,11 +39,15 @@ import {
   RADIUS,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function ProductDetailScreen({
   route,
   navigation,
 }) {
   const COLORS = useTheme();
+
+  const toast = useToast();
 
   const styles = React.useMemo(
     () => makeStyles(COLORS),
@@ -135,6 +139,7 @@ export default function ProductDetailScreen({
         purchasesRes.error;
 
       if (failure) {
+        toast.show("Couldn't load product. Check internet.", 'error');
         setError(
           failure.message ||
             'Could not load product'
@@ -148,7 +153,7 @@ export default function ProductDetailScreen({
         purchasesRes.data || []
       );
     },
-    [productId]
+    [productId, toast]
   );
 
   useFocusEffect(

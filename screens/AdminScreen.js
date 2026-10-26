@@ -45,10 +45,14 @@ const SEARCH_DELAY_MS = 300;
 const escapeLike = (text) =>
   text.replace(/[\\%_]/g, '\\$&');
 
+import { useToast } from '../components/Toast';
+
 export default function AdminScreen({
   navigation,
 }) {
   const COLORS = useTheme();
+
+  const toast = useToast();
 
   const styles = React.useMemo(
     () => makeStyles(COLORS),
@@ -142,6 +146,7 @@ export default function AdminScreen({
 
       if (fetchError) {
         failedOffset.current = offset;
+        toast.show("Couldn't load products. Check internet.", 'error');
         setError(
           fetchError.message ||
             'Could not load products'
@@ -161,7 +166,7 @@ export default function AdminScreen({
           : rows
       );
     },
-    []
+    [toast]
   );
 
   // load on focus and when the search term changes
@@ -333,6 +338,8 @@ export default function AdminScreen({
               );
               return;
             }
+
+            toast.show('Product deleted');
 
             fetchProducts(query, 0);
           },

@@ -17,8 +17,12 @@ import {
     SHADOW,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function NotesScreen() {
   const COLORS = useTheme();
+
+    const toast = useToast();
 
   const styles = React.useMemo(
     () => makeStyles(COLORS),
@@ -51,10 +55,7 @@ export default function NotesScreen() {
                     .maybeSingle();
 
             if (error) {
-                Alert.alert(
-                    'Error',
-                    'Could not load notes'
-                );
+                toast.show("Couldn't load notes. Check internet.", 'error');
             }
 
             if (data) {
@@ -76,6 +77,9 @@ export default function NotesScreen() {
         setSaving(true);
         try {
           await task();
+        } catch (e) {
+          if (__DEV__) console.warn(e);
+          toast.show("Couldn't save. Check internet and try again.", 'error');
         } finally {
           inFlight.current = false;
           setSaving(false);
@@ -111,17 +115,11 @@ const handleSave = () =>
             setSaving(false);
 
             if (error) {
-                Alert.alert(
-                    'Error',
-                    'Failed to save notes'
-                );
+                toast.show("Couldn't save. Check internet and try again.", 'error');
                 return;
             }
 
-            Alert.alert(
-                'Saved',
-                'Notes saved successfully'
-            );
+            toast.show('Note saved');
         });
 
     if (loading) {

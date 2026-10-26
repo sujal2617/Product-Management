@@ -59,6 +59,8 @@ import NotesScreen from './screens/NotesScreen';
 
 import { useTheme, DARK_COLORS } from './theme';
 
+import { ToastProvider } from './components/Toast';
+
 const Stack =
   createNativeStackNavigator();
 
@@ -167,6 +169,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <ToastProvider>
       {/* STATUS BAR */}
       <StatusBar
         translucent={false}
@@ -355,6 +358,7 @@ export default function App() {
           )}
         </Stack.Navigator>
       </NavigationContainer>
+      </ToastProvider>
     </SafeAreaProvider>
   );
 }

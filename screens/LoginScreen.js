@@ -57,10 +57,14 @@ function friendlyMessage(code) {
   }
 }
 
+import { useToast } from '../components/Toast';
+
 export default function LoginScreen({
   navigation,
 }) {
   const COLORS = useTheme();
+
+  const toast = useToast();
 
   const styles = React.useMemo(
     () => makeStyles(COLORS),
@@ -156,6 +160,10 @@ export default function LoginScreen({
 
         // Reload the token once so a newly set role claim is included.
         await auth.currentUser?.getIdToken(true);
+
+        const who = auth.currentUser?.displayName;
+
+        toast.show(who ? 'Welcome, ' + who : 'Logged in');
 
         // Auth listener in App.js navigates on success.
       } catch (error) {
