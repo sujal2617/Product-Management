@@ -33,7 +33,7 @@ import { auth } from '../lib/firebase';
 import { parsePrice } from '../utils/validation';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
@@ -43,6 +43,13 @@ export default function AddPurchaseScreen({
   route,
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const { productId } =
     route.params;
 
@@ -336,7 +343,7 @@ const handleSave = () =>
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color={COLORS.white} />
+              <ActivityIndicator color={COLORS.onPrimary} />
             ) : (
             <Text
               style={
@@ -354,7 +361,7 @@ const handleSave = () =>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -455,7 +462,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#eef7ff',
+      color: COLORS.onPrimarySoft,
 
       fontWeight: '700',
 
@@ -478,7 +485,7 @@ const styles =
       },
 
       doneText: {
-          color: '#fff',
+          color: COLORS.onPrimary,
           fontWeight: '700',
           fontSize: 16,
       },

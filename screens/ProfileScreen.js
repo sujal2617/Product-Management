@@ -34,7 +34,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   RADIUS,
   SPACING,
@@ -43,6 +43,13 @@ import {
 export default function ProfileScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [userData, setUserData] =
     useState(null);
 
@@ -171,7 +178,7 @@ export default function ProfileScreen({
               name="person"
               size={56}
               color={
-                COLORS.white
+                COLORS.onPrimary
               }
             />
           </View>
@@ -199,7 +206,7 @@ export default function ProfileScreen({
                 name="phone"
                 size={20}
                 color={
-                  COLORS.white
+                  COLORS.onPrimary
                 }
               />
             </View>
@@ -237,7 +244,7 @@ export default function ProfileScreen({
                 name="email"
                 size={20}
                 color={
-                  COLORS.white
+                  COLORS.onPrimary
                 }
               />
             </View>
@@ -281,7 +288,7 @@ export default function ProfileScreen({
                 name="admin-panel-settings"
                 size={20}
                 color={
-                  COLORS.white
+                  COLORS.onPrimary
                 }
               />
             </View>
@@ -327,7 +334,7 @@ export default function ProfileScreen({
               name="admin-panel-settings"
               size={24}
               color={
-                COLORS.white
+                COLORS.onPrimary
               }
             />
 
@@ -350,7 +357,7 @@ export default function ProfileScreen({
           <MaterialIcons
               name="note-alt"
               size={22}
-              color="#fff"
+              color={COLORS.onPrimary}
           />
 
           <Text style={styles.actionText}>
@@ -369,7 +376,7 @@ export default function ProfileScreen({
             name="logout"
             size={24}
             color={
-              COLORS.white
+              COLORS.onPrimary
             }
           />
 
@@ -386,7 +393,7 @@ export default function ProfileScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -568,7 +575,7 @@ const styles =
     },
 
     actionButton: {
-      backgroundColor: '#5B8DEF',
+      backgroundColor: COLORS.accent,
       borderRadius: RADIUS.md,
       padding: 18,
       marginTop: 16,
@@ -579,14 +586,14 @@ const styles =
     },
 
     actionText: {
-      color: '#fff',
+      color: COLORS.onPrimary,
       fontWeight: '700',
       fontSize: 16,
       marginLeft: 10,
     },
 
     buttonText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
 
       fontWeight: '700',
 

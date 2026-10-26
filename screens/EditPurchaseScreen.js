@@ -31,7 +31,7 @@ import { supabase } from '../lib/supabase';
 import { parsePrice } from '../utils/validation';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
@@ -41,6 +41,13 @@ export default function EditPurchaseScreen({
   route,
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const {
     purchase,
     isAdmin,
@@ -439,7 +446,7 @@ const handleSave = () =>
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color={COLORS.white} />
+              <ActivityIndicator color={COLORS.onPrimary} />
             ) : (
             <Text
               style={
@@ -466,7 +473,7 @@ const handleSave = () =>
               <MaterialIcons
                 name="delete"
                 size={22}
-                color="#eef7ff"
+                color={COLORS.onPrimarySoft}
               />
 
               <Text
@@ -485,7 +492,7 @@ const handleSave = () =>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -607,7 +614,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#eef7ff',
+      color: COLORS.onPrimarySoft,
 
       fontWeight: '700',
 
@@ -632,7 +639,7 @@ const styles =
       },
 
       doneText: {
-          color: '#fff',
+          color: COLORS.onPrimary,
           fontWeight: '700',
           fontSize: 16,
       },

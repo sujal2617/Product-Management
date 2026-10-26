@@ -33,7 +33,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SPACING,
   SHADOW,
   RADIUS,
@@ -49,6 +49,13 @@ const escapeLike = (text) =>
 export default function ProductsScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [products, setProducts] =
     useState([]);
 
@@ -293,6 +300,8 @@ export default function ProductsScreen({
 
           {/* PROFILE */}
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Open profile"
             style={
               styles.profileButton
             }
@@ -305,7 +314,7 @@ export default function ProductsScreen({
             <MaterialIcons
               name="person"
               size={24}
-              color={COLORS.white}
+              color={COLORS.onPrimary}
             />
           </TouchableOpacity>
         </View>
@@ -342,6 +351,9 @@ export default function ProductsScreen({
           {search.length >
             0 && (
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               onPress={() =>
                 setSearch('')
               }
@@ -411,6 +423,8 @@ export default function ProductsScreen({
 
         {/* ADD PRODUCT */}
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Add product"
           style={styles.fab}
           onPress={() =>
             navigation.navigate(
@@ -421,7 +435,7 @@ export default function ProductsScreen({
           <MaterialIcons
             name="add"
             size={34}
-            color={COLORS.white}
+            color={COLORS.onPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -429,7 +443,7 @@ export default function ProductsScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -545,7 +559,7 @@ const styles =
     },
 
     retryText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
       fontSize: 16,
       fontWeight: '700',
     },

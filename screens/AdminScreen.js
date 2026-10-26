@@ -32,7 +32,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
@@ -48,6 +48,13 @@ const escapeLike = (text) =>
 export default function AdminScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [products, setProducts] =
     useState([]);
 
@@ -388,6 +395,9 @@ export default function AdminScreen({
           {search.length >
             0 && (
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               onPress={() =>
                 setSearch('')
               }
@@ -465,6 +475,9 @@ export default function AdminScreen({
                 }
               >
                 <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit user"
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   style={
                     styles.editButton
                   }
@@ -481,11 +494,14 @@ export default function AdminScreen({
                   <MaterialIcons
                     name="edit"
                     size={22}
-                    color={COLORS.white}
+                    color={COLORS.onPrimary}
                   />
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete user"
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   style={
                     styles.deleteButton
                   }
@@ -498,7 +514,7 @@ export default function AdminScreen({
                   <MaterialIcons
                     name="delete"
                     size={22}
-                    color={COLORS.white}
+                    color={COLORS.onPrimary}
                   />
                 </TouchableOpacity>
               </View>
@@ -513,7 +529,7 @@ export default function AdminScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -683,7 +699,7 @@ const styles =
     },
 
     retryText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
       fontSize: 16,
       fontWeight: '700',
     },
@@ -717,7 +733,7 @@ const styles =
       },
 
       notesButtonText: {
-          color: '#fff',
+          color: COLORS.onPrimary,
           fontSize: 16,
           fontWeight: '700',
           marginLeft: 8,

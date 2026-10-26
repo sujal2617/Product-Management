@@ -29,7 +29,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   RADIUS,
   SPACING,
@@ -38,6 +38,13 @@ import {
 export default function RegisterScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [name, setName] =
     useState('');
 
@@ -220,6 +227,9 @@ export default function RegisterScreen({
               />
 
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 onPress={() =>
                   setShowPassword(
                     !showPassword
@@ -276,7 +286,7 @@ export default function RegisterScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -373,7 +383,7 @@ const styles =
     },
 
     buttonText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
       fontWeight: '700',
       fontSize: 16,
     },
