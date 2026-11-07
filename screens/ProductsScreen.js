@@ -33,7 +33,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SPACING,
   SHADOW,
   RADIUS,
@@ -46,9 +46,20 @@ const SEARCH_DELAY_MS = 300;
 const escapeLike = (text) =>
   text.replace(/[\\%_]/g, '\\$&');
 
+import { useToast } from '../components/Toast';
+
 export default function ProductsScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const toast = useToast();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [products, setProducts] =
     useState([]);
 
@@ -136,6 +147,7 @@ export default function ProductsScreen({
 
       if (fetchError) {
         failedOffset.current = offset;
+        toast.show("Couldn't load products. Check internet.", 'error');
         setError(
           fetchError.message ||
             'Could not load products'
@@ -155,7 +167,7 @@ export default function ProductsScreen({
           : rows
       );
     },
-    []
+    [toast]
   );
 
   // load on focus and when the search term changes
@@ -293,11 +305,13 @@ export default function ProductsScreen({
 
           {/* PROFILE */}
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Open profile"
             style={
               styles.profileButton
             }
             onPress={() =>
-              navigation.push(
+              navigation.navigate(
                 'Profile'
               )
             }
@@ -305,7 +319,7 @@ export default function ProductsScreen({
             <MaterialIcons
               name="person"
               size={24}
-              color={COLORS.white}
+              color={COLORS.onPrimary}
             />
           </TouchableOpacity>
         </View>
@@ -342,6 +356,9 @@ export default function ProductsScreen({
           {search.length >
             0 && (
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               onPress={() =>
                 setSearch('')
               }
@@ -411,9 +428,11 @@ export default function ProductsScreen({
 
         {/* ADD PRODUCT */}
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Add product"
           style={styles.fab}
           onPress={() =>
-            navigation.push(
+            navigation.navigate(
               'AddProduct'
             )
           }
@@ -421,7 +440,7 @@ export default function ProductsScreen({
           <MaterialIcons
             name="add"
             size={34}
-            color={COLORS.white}
+            color={COLORS.onPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -429,7 +448,7 @@ export default function ProductsScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -545,7 +564,7 @@ const styles =
     },
 
     retryText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
       fontSize: 16,
       fontWeight: '700',
     },

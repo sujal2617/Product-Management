@@ -34,15 +34,26 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   RADIUS,
   SPACING,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function ProfileScreen({
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const toast = useToast();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const [userData, setUserData] =
     useState(null);
 
@@ -104,23 +115,41 @@ export default function ProfileScreen({
       } catch (error) {
         if (__DEV__) console.warn(error);
 
+        toast.show("Couldn't load profile. Check internet.", 'error');
+
         setLoading(false);
       }
     };
 
-  const handleLogout =
+  const performLogout =
     async () => {
       try {
         await signOut(auth);
+
+        toast.show('Logged out', 'info');
       } catch (error) {
         if (__DEV__) console.warn(error);
 
         Alert.alert(
           'Error',
-          'Logout failed'
+          'Logout failed. Try again.'
         );
       }
     };
+
+  const handleLogout = () =>
+    Alert.alert(
+      'Log out',
+      'Do you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log out',
+          style: 'destructive',
+          onPress: performLogout,
+        },
+      ]
+    );
 
   // LOADING
   if (loading) {
@@ -171,7 +200,7 @@ export default function ProfileScreen({
               name="person"
               size={56}
               color={
-                COLORS.white
+                COLORS.onPrimary
               }
             />
           </View>
@@ -199,7 +228,7 @@ export default function ProfileScreen({
                 name="phone"
                 size={20}
                 color={
-                  COLORS.white
+                  COLORS.onPrimary
                 }
               />
             </View>
@@ -237,7 +266,7 @@ export default function ProfileScreen({
                 name="email"
                 size={20}
                 color={
-                  COLORS.white
+                  COLORS.onPrimary
                 }
               />
             </View>
@@ -281,7 +310,7 @@ export default function ProfileScreen({
                 name="admin-panel-settings"
                 size={20}
                 color={
-                  COLORS.white
+                  COLORS.onPrimary
                 }
               />
             </View>
@@ -318,7 +347,7 @@ export default function ProfileScreen({
               styles.adminButton
             }
             onPress={() =>
-              navigation.push(
+              navigation.navigate(
                 'Admin'
               )
             }
@@ -327,7 +356,7 @@ export default function ProfileScreen({
               name="admin-panel-settings"
               size={24}
               color={
-                COLORS.white
+                COLORS.onPrimary
               }
             />
 
@@ -350,7 +379,7 @@ export default function ProfileScreen({
           <MaterialIcons
               name="note-alt"
               size={22}
-              color="#fff"
+              color={COLORS.onPrimary}
           />
 
           <Text style={styles.actionText}>
@@ -369,7 +398,7 @@ export default function ProfileScreen({
             name="logout"
             size={24}
             color={
-              COLORS.white
+              COLORS.onPrimary
             }
           />
 
@@ -386,7 +415,7 @@ export default function ProfileScreen({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -568,7 +597,7 @@ const styles =
     },
 
     actionButton: {
-      backgroundColor: '#5B8DEF',
+      backgroundColor: COLORS.accent,
       borderRadius: RADIUS.md,
       padding: 18,
       marginTop: 16,
@@ -579,14 +608,14 @@ const styles =
     },
 
     actionText: {
-      color: '#fff',
+      color: COLORS.onPrimary,
       fontWeight: '700',
       fontSize: 16,
       marginLeft: 10,
     },
 
     buttonText: {
-      color: COLORS.white,
+      color: COLORS.onPrimary,
 
       fontWeight: '700',
 

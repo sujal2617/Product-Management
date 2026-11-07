@@ -24,16 +24,27 @@ import { supabase } from '../lib/supabase';
 import { escapeLike } from '../utils/validation';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function EditProductScreen({
   route,
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const toast = useToast();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const { product } =
     route.params;
 
@@ -53,6 +64,9 @@ export default function EditProductScreen({
       setSaving(true);
       try {
         await task();
+      } catch (e) {
+        if (__DEV__) console.warn(e);
+        toast.show("Couldn't save. Check internet and try again.", 'error');
       } finally {
         inFlight.current = false;
         setSaving(false);
@@ -90,10 +104,7 @@ const handleSave = () =>
       if (checkError) {
         setSaving(false);
 
-        Alert.alert(
-          'Error',
-          'Could not check existing products'
-        );
+        toast.show("Couldn't check existing products. Try again.", 'error');
 
         return;
       }
@@ -123,25 +134,13 @@ const handleSave = () =>
       setSaving(false);
 
       if (error) {
-        Alert.alert(
-          'Error',
-          'Failed to update product'
-        );
+        toast.show("Couldn't save. Check internet and try again.", 'error');
 
         return;
       }
 
-      Alert.alert(
-        'Success',
-        'Product Updated',
-        [
-          {
-            text: 'OK',
-            onPress: () =>
-              navigation.goBack(),
-          },
-        ]
-      );
+      navigation.goBack();
+      toast.show('Product updated');
     });
 
   return (
@@ -182,7 +181,7 @@ const handleSave = () =>
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={COLORS.onPrimary} />
           ) : (
           <Text
             style={
@@ -199,7 +198,7 @@ const handleSave = () =>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -267,7 +266,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#eef7ff',
+      color: COLORS.onPrimarySoft,
 
       fontWeight: '700',
 

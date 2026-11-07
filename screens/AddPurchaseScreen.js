@@ -33,16 +33,27 @@ import { auth } from '../lib/firebase';
 import { parsePrice } from '../utils/validation';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   SPACING,
   RADIUS,
 } from '../theme';
 
+import { useToast } from '../components/Toast';
+
 export default function AddPurchaseScreen({
   route,
   navigation,
 }) {
+  const COLORS = useTheme();
+
+  const toast = useToast();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   const { productId } =
     route.params;
 
@@ -88,6 +99,9 @@ export default function AddPurchaseScreen({
       setSaving(true);
       try {
         await task();
+      } catch (e) {
+        if (__DEV__) console.warn(e);
+        toast.show("Couldn't save. Check internet and try again.", 'error');
       } finally {
         inFlight.current = false;
         setSaving(false);
@@ -139,13 +153,12 @@ const handleSave = () =>
       if (error) {
         if (__DEV__) console.warn(error);
 
-        Alert.alert('Error', 'Failed to save purchase');
+        toast.show("Couldn't save. Check internet and try again.", 'error');
         return;
       }
 
-      Alert.alert('Success', 'Purchase Added', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      navigation.goBack();
+      toast.show('Purchase saved');
     });
 
   return (
@@ -336,7 +349,7 @@ const handleSave = () =>
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator color={COLORS.white} />
+              <ActivityIndicator color={COLORS.onPrimary} />
             ) : (
             <Text
               style={
@@ -354,7 +367,7 @@ const handleSave = () =>
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -455,7 +468,7 @@ const styles =
     },
 
     buttonText: {
-      color: '#eef7ff',
+      color: COLORS.onPrimarySoft,
 
       fontWeight: '700',
 
@@ -478,7 +491,7 @@ const styles =
       },
 
       doneText: {
-          color: '#fff',
+          color: COLORS.onPrimary,
           fontWeight: '700',
           fontSize: 16,
       },

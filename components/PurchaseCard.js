@@ -12,7 +12,7 @@ import {
 } from '@expo/vector-icons';
 
 import {
-  COLORS,
+  useTheme,
   SHADOW,
   RADIUS,
 } from '../theme';
@@ -22,6 +22,13 @@ export default function PurchaseCard({
   isAdmin,
   onEdit,
 }) {
+  const COLORS = useTheme();
+
+  const styles = React.useMemo(
+    () => makeStyles(COLORS),
+    [COLORS]
+  );
+
   // FORMAT DATE
   const formattedDate =
     new Date(
@@ -42,7 +49,7 @@ export default function PurchaseCard({
         <MaterialIcons
           name="calendar-month"
           size={17}
-          color="#2d8cff"
+          color={COLORS.info}
         />
 
         <Text style={styles.date}>
@@ -97,7 +104,7 @@ export default function PurchaseCard({
           <MaterialIcons
             name="edit"
             size={17}
-            color="#fff"
+            color={COLORS.onPrimary}
           />
 
           <Text
@@ -113,11 +120,11 @@ export default function PurchaseCard({
   );
 }
 
-const styles =
+const makeStyles = (COLORS) =>
   StyleSheet.create({
     card: {
       backgroundColor:
-        '#cbf5dd',
+        COLORS.successSoft,
 
       borderRadius:
         RADIUS.md,
@@ -169,7 +176,7 @@ const styles =
 
       fontWeight: '800',
 
-      color: '#2d8cff',
+      color: COLORS.info,
 
       lineHeight: 22,
 
@@ -181,7 +188,7 @@ const styles =
 
       fontWeight: '800',
 
-      color: '#ff3b3b',
+      color: COLORS.dangerStrong,
 
       lineHeight: 22,
 
@@ -202,7 +209,7 @@ const styles =
       marginTop: 14,
 
       backgroundColor:
-        '#2d8cff',
+        COLORS.info,
 
       borderRadius: 12,
 
@@ -217,7 +224,7 @@ const styles =
     },
 
     editText: {
-      color: '#fff',
+      color: COLORS.onPrimary,
 
       fontWeight: '700',
 
