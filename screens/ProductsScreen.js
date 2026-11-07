@@ -129,7 +129,7 @@ export default function ProductsScreen({
       if (term) {
         request = request.ilike(
           'name',
-          escapeLike(term) + '%'
+          '%' + escapeLike(term) + '%'
         );
       }
 
