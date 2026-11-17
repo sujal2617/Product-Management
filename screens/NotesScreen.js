@@ -41,6 +41,18 @@ export default function NotesScreen() {
     const [saving, setSaving] =
         useState(false);
 
+    // read mode by default so scrolling never moves the cursor or opens the keyboard
+    const [editing, setEditing] =
+        useState(false);
+
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        if (editing) {
+            inputRef.current?.focus();
+        }
+    }, [editing]);
+
     useEffect(() => {
         fetchNote();
     }, []);
@@ -120,6 +132,7 @@ const handleSave = () =>
             }
 
             toast.show('Note saved');
+            setEditing(false);
         });
 
     if (loading) {
@@ -145,8 +158,16 @@ const handleSave = () =>
                         styles.saveButton,
                         saving && { opacity: 0.6 },
                     ]}
-                    onPress={handleSave}
+                    onPress={
+                        editing
+                            ? handleSave
+                            : () => setEditing(true)
+                    }
                     disabled={saving}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                        editing ? 'Save note' : 'Edit note'
+                    }
                 >
                     {saving ? (
                         <ActivityIndicator color={COLORS.onPrimary} />
@@ -156,15 +177,17 @@ const handleSave = () =>
                             styles.saveButtonText
                         }
                     >
-                        Save
+                        {editing ? 'Save' : 'Edit'}
                     </Text>
                     )}
                 </TouchableOpacity>
             </View>
 
             <TextInput
+                ref={inputRef}
                 style={styles.input}
                 multiline
+                editable={editing}
                 placeholder="Write notes..."
                 placeholderTextColor={
                     COLORS.subText
